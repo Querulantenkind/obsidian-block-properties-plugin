@@ -61,6 +61,34 @@ export class BlockPropertiesSettingTab extends PluginSettingTab {
 					})
 			);
 
+		// Linked Properties section
+		containerEl.createEl('h3', {text: 'Linked Properties'});
+
+		new Setting(containerEl)
+			.setName('Enable linked properties')
+			.setDesc('Allow property values to contain links to notes ([[Note]]) and blocks (^block-id). Cmd/Ctrl+click to navigate.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.enableLinkedProperties)
+					.onChange(async (value) => {
+						this.plugin.settings.enableLinkedProperties = value;
+						await this.plugin.saveSettings();
+						this.plugin.refreshEditorExtension();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Show backlinks in panel')
+			.setDesc('Display a "Referenced by" section in the property panel showing blocks that link to this block')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showBacklinksInPanel)
+					.onChange(async (value) => {
+						this.plugin.settings.showBacklinksInPanel = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		// Templates section
 		containerEl.createEl('h3', {text: 'Property Templates'});
 

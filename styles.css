@@ -587,3 +587,131 @@
 	background: var(--background-modifier-border);
 	color: var(--text-muted);
 }
+
+/* Linked Properties - Panel Link Values */
+.block-properties-panel-value-with-links {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 2px;
+}
+
+.block-properties-panel-link-value {
+	color: var(--text-accent);
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+}
+
+.block-properties-panel-link-value:hover {
+	text-decoration-style: solid;
+}
+
+.block-properties-link-note::before {
+	content: '[[';
+	opacity: 0.5;
+}
+
+.block-properties-link-note::after {
+	content: ']]';
+	opacity: 0.5;
+}
+
+.block-properties-link-block::before {
+	content: '^';
+	opacity: 0.5;
+}
+
+.block-properties-panel-edit-icon {
+	opacity: 0;
+	cursor: pointer;
+	color: var(--text-muted);
+	font-size: 0.85em;
+	transition: opacity 0.15s ease;
+}
+
+.block-properties-panel-value-with-links:hover .block-properties-panel-edit-icon {
+	opacity: 1;
+}
+
+/* Backlinks Section */
+.block-properties-panel-backlinks {
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.block-properties-panel-backlinks h5 {
+	margin: 0 0 10px 0;
+	font-size: 0.9em;
+	color: var(--text-muted);
+}
+
+.block-properties-panel-backlinks-target {
+	margin-bottom: 6px;
+}
+
+.block-properties-panel-backlinks-target-id {
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+	color: var(--text-accent);
+	font-weight: 500;
+}
+
+.block-properties-panel-backlinks-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-left: 8px;
+	margin-bottom: 12px;
+}
+
+.block-properties-panel-backlinks-item {
+	font-size: 0.85em;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.block-properties-panel-backlinks-link {
+	color: var(--text-accent);
+	cursor: pointer;
+}
+
+.block-properties-panel-backlinks-link:hover {
+	text-decoration: underline;
+}
+
+.block-properties-panel-backlinks-key {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
+/* Editor Link Decorations */
+.block-property-link {
+	color: var(--text-accent);
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+}
+
+.block-property-link:hover {
+	text-decoration-style: solid;
+}
+
+/* Autocomplete - Note/Block suggestions */
+.block-properties-suggestion-type-note-link {
+	background: var(--color-blue);
+	color: white;
+}
+
+.block-properties-suggestion-type-block-ref {
+	background: var(--color-purple);
+	color: white;
+}
+
+.block-properties-suggestion-path {
+	font-size: 0.75em;
+	color: var(--text-muted);
+	font-style: italic;
+}

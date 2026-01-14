@@ -1,6 +1,22 @@
+// Link types for property values
+export type LinkType = 'note' | 'block';
+
+export interface ParsedLink {
+	type: LinkType;
+	raw: string;      // Original text: "[[Note]]" or "^block-id"
+	target: string;   // Resolved: "Note" or "block-id"
+	alias?: string;   // For [[Note|alias]]
+}
+
+export interface ParsedValue {
+	raw: string;
+	links: ParsedLink[];
+}
+
 export interface BlockProperty {
 	key: string;
 	value: string;
+	parsedValue?: ParsedValue;
 }
 
 export interface BlockProperties {
@@ -8,6 +24,14 @@ export interface BlockProperties {
 	properties: BlockProperty[];
 	from: number;
 	to: number;
+}
+
+// Backlink tracking
+export interface BacklinkEntry {
+	sourceFile: string;
+	sourceBlockId: string;
+	key: string;
+	line: number;
 }
 
 export interface PropertyTemplate {
@@ -23,6 +47,8 @@ export interface BlockPropertiesSettings {
 	opacity: number;
 	templates: PropertyTemplate[];
 	autoExpandPresets: boolean;
+	enableLinkedProperties: boolean;
+	showBacklinksInPanel: boolean;
 }
 
 export const DEFAULT_SETTINGS: BlockPropertiesSettings = {
@@ -40,4 +66,6 @@ export const DEFAULT_SETTINGS: BlockPropertiesSettings = {
 		},
 	],
 	autoExpandPresets: true,
+	enableLinkedProperties: true,
+	showBacklinksInPanel: true,
 };

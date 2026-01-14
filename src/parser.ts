@@ -1,4 +1,5 @@
 import {BlockProperties, BlockProperty} from './types';
+import {parseLinksInValue} from './link-parser';
 
 // Matches: ^block-id [key: value, key2: value2]
 // Group 1: block-id
@@ -43,7 +44,8 @@ function parsePropertiesString(propsString: string): BlockProperty[] {
 		const value = pair.slice(colonIndex + 1).trim();
 
 		if (key) {
-			properties.push({key, value});
+			const parsedValue = parseLinksInValue(value);
+			properties.push({key, value, parsedValue});
 		}
 	}
 

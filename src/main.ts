@@ -8,18 +8,23 @@ import {BlockPropertiesSettingTab} from './settings';
 import {BlockPropertiesSuggest} from './suggest';
 import {BlockPropertiesSettings, DEFAULT_SETTINGS} from './types';
 import {TemplatePickerModal} from './template-modal';
+import {BacklinkIndexer} from './backlink-index';
 
 export default class BlockPropertiesPlugin extends Plugin {
 	settings: BlockPropertiesSettings;
 	private styleEl: HTMLStyleElement | null = null;
 	private editorExtension: Extension[] = [];
 	private suggest: BlockPropertiesSuggest | null = null;
+	private backlinkIndex: BacklinkIndexer | null = null;
 
 	async onload() {
 		await this.loadSettings();
 
 		// Register the CodeMirror extension
-		this.editorExtension = createBlockPropertiesExtension(this.settings.displayMode);
+		this.editorExtension = createBlockPropertiesExtension(
+			this.settings.displayMode,
+			this.settings.enableLinkedProperties ? this.app : undefined
+		);
 		this.registerEditorExtension(this.editorExtension);
 
 		// Register the property panel view
@@ -31,6 +36,17 @@ export default class BlockPropertiesPlugin extends Plugin {
 
 		// Add settings tab
 		this.addSettingTab(new BlockPropertiesSettingTab(this.app, this));
+
+		// Initialize backlink index if linked properties are enabled
+		if (this.settings.enableLinkedProperties) {
+			this.backlinkIndex = new BacklinkIndexer(this.app);
+			this.backlinkIndex.registerFileEvents();
+
+			// Build index after workspace is ready
+			this.app.workspace.onLayoutReady(() => {
+				this.backlinkIndex?.buildIndex();
+			});
+		}
 
 		// Add command to insert block property template
 		this.addCommand({
@@ -294,6 +310,11 @@ export default class BlockPropertiesPlugin extends Plugin {
 		if (this.styleEl) {
 			this.styleEl.remove();
 		}
+		this.backlinkIndex?.unregisterFileEvents();
+	}
+
+	getBacklinkIndex(): BacklinkIndexer | null {
+		return this.backlinkIndex;
 	}
 
 	async loadSettings() {
@@ -326,7 +347,10 @@ export default class BlockPropertiesPlugin extends Plugin {
 
 	refreshEditorExtension() {
 		// Update the extension array contents
-		const newExtension = createBlockPropertiesExtension(this.settings.displayMode);
+		const newExtension = createBlockPropertiesExtension(
+			this.settings.displayMode,
+			this.settings.enableLinkedProperties ? this.app : undefined
+		);
 		this.editorExtension.length = 0;
 		this.editorExtension.push(...newExtension);
 

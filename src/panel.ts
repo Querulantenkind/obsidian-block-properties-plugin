@@ -1,5 +1,8 @@
 import {ItemView, MarkdownView, Notice, TFile, WorkspaceLeaf} from 'obsidian';
 import {parseBlockProperties} from './parser';
+import {parseLinksInValue, getLinkPositions} from './link-parser';
+import {navigateToLink} from './link-resolver';
+import {ParsedLink, BacklinkEntry} from './types';
 import type BlockPropertiesPlugin from './main';
 
 export const PANEL_VIEW_TYPE = 'block-properties-panel';
@@ -131,14 +134,7 @@ export class PropertyPanelView extends ItemView {
 					cls: 'block-properties-panel-value-container',
 				});
 
-				const valueSpan = valueContainer.createEl('span', {
-					text: p.value || '(empty)',
-					cls: `block-properties-panel-value ${!p.value ? 'is-empty' : ''}`,
-				});
-
-				valueSpan.addEventListener('click', () => {
-					this.startEditingValue(valueContainer, block, p.key, p.value);
-				});
+				this.renderPropertyValue(valueContainer, p.value, block, p.key);
 
 				const deleteBtn = propEl.createEl('button', {
 					cls: 'block-properties-panel-delete-btn',
@@ -157,6 +153,11 @@ export class PropertyPanelView extends ItemView {
 			addPropBtn.addEventListener('click', () => {
 				this.startAddingProperty(props, block, addPropBtn);
 			});
+		}
+
+		// Backlinks section
+		if (this.plugin.settings.showBacklinksInPanel) {
+			await this.renderBacklinks(contentEl, blocks);
 		}
 
 		// Summary section
@@ -243,6 +244,178 @@ export class PropertyPanelView extends ItemView {
 				true
 			);
 			editor.focus();
+		}
+	}
+
+	private renderPropertyValue(
+		container: HTMLElement,
+		value: string,
+		block: PanelBlock,
+		key: string
+	): void {
+		if (!value) {
+			const emptySpan = container.createEl('span', {
+				text: '(empty)',
+				cls: 'block-properties-panel-value is-empty',
+			});
+			emptySpan.addEventListener('click', () => {
+				this.startEditingValue(container, block, key, value);
+			});
+			return;
+		}
+
+		const linkPositions = getLinkPositions(value);
+
+		if (linkPositions.length === 0) {
+			// No links, render as plain text (clickable to edit)
+			const valueSpan = container.createEl('span', {
+				text: value,
+				cls: 'block-properties-panel-value',
+			});
+			valueSpan.addEventListener('click', () => {
+				this.startEditingValue(container, block, key, value);
+			});
+			return;
+		}
+
+		// Render value with clickable links
+		const valueEl = container.createEl('span', {
+			cls: 'block-properties-panel-value block-properties-panel-value-with-links',
+		});
+
+		let lastIndex = 0;
+		for (const pos of linkPositions) {
+			// Text before link
+			if (pos.from > lastIndex) {
+				const textSpan = valueEl.createEl('span', {
+					text: value.slice(lastIndex, pos.from),
+				});
+				textSpan.addEventListener('click', () => {
+					this.startEditingValue(container, block, key, value);
+				});
+			}
+
+			// Clickable link
+			const linkEl = valueEl.createEl('a', {
+				text: pos.link.alias || pos.link.target,
+				cls: `block-properties-panel-link-value block-properties-link-${pos.link.type}`,
+			});
+
+			linkEl.addEventListener('click', async (e) => {
+				e.stopPropagation();
+				const sourcePath = this.currentFile?.path || '';
+				const success = await navigateToLink(
+					this.app,
+					pos.link,
+					sourcePath,
+					this.currentFile || undefined
+				);
+				if (!success) {
+					new Notice(`Could not find ${pos.link.type === 'note' ? 'note' : 'block'}: ${pos.link.target}`);
+				}
+			});
+
+			lastIndex = pos.to;
+		}
+
+		// Text after last link
+		if (lastIndex < value.length) {
+			const textSpan = valueEl.createEl('span', {
+				text: value.slice(lastIndex),
+			});
+			textSpan.addEventListener('click', () => {
+				this.startEditingValue(container, block, key, value);
+			});
+		}
+
+		// Edit icon for the whole value
+		const editIcon = valueEl.createEl('span', {
+			text: ' \u270e',
+			cls: 'block-properties-panel-edit-icon',
+		});
+		editIcon.addEventListener('click', () => {
+			this.startEditingValue(container, block, key, value);
+		});
+	}
+
+	private async renderBacklinks(
+		container: HTMLElement,
+		blocks: PanelBlock[]
+	): Promise<void> {
+		const backlinkIndex = this.plugin.getBacklinkIndex();
+		if (!backlinkIndex) return;
+
+		// Collect all backlinks for blocks in this file
+		const allBacklinks: Array<{targetId: string; entries: BacklinkEntry[]}> = [];
+
+		for (const block of blocks) {
+			const entries = backlinkIndex.getBacklinksForBlock(block.blockId);
+			if (entries.length > 0) {
+				allBacklinks.push({targetId: `^${block.blockId}`, entries});
+			}
+		}
+
+		if (allBacklinks.length === 0) return;
+
+		const section = container.createEl('div', {
+			cls: 'block-properties-panel-backlinks',
+		});
+
+		section.createEl('h5', {text: 'Referenced by'});
+
+		for (const {targetId, entries} of allBacklinks) {
+			const targetHeader = section.createEl('div', {
+				cls: 'block-properties-panel-backlinks-target',
+			});
+			targetHeader.createEl('span', {
+				text: targetId,
+				cls: 'block-properties-panel-backlinks-target-id',
+			});
+
+			const list = section.createEl('div', {
+				cls: 'block-properties-panel-backlinks-list',
+			});
+
+			for (const entry of entries) {
+				const item = list.createEl('div', {
+					cls: 'block-properties-panel-backlinks-item',
+				});
+
+				const file = this.app.vault.getAbstractFileByPath(entry.sourceFile);
+				const displayName = file instanceof TFile
+					? `${file.basename} → ^${entry.sourceBlockId}`
+					: `${entry.sourceFile} → ^${entry.sourceBlockId}`;
+
+				const link = item.createEl('a', {
+					text: displayName,
+					cls: 'block-properties-panel-backlinks-link',
+				});
+
+				link.addEventListener('click', async () => {
+					if (file instanceof TFile) {
+						const leaf = this.app.workspace.getLeaf();
+						await leaf.openFile(file);
+
+						// Navigate to line
+						setTimeout(() => {
+							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+							if (view) {
+								const editor = view.editor;
+								editor.setCursor({line: entry.line, ch: 0});
+								editor.scrollIntoView(
+									{from: {line: entry.line, ch: 0}, to: {line: entry.line, ch: 0}},
+									true
+								);
+							}
+						}, 100);
+					}
+				});
+
+				item.createEl('span', {
+					text: ` (${entry.key})`,
+					cls: 'block-properties-panel-backlinks-key',
+				});
+			}
 		}
 	}
 
