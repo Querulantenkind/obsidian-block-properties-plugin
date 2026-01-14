@@ -86,11 +86,18 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 - **Preset Styles**: Built-in visual styles for common patterns
 - **Custom Rules**: Define your own key-value → class mappings
 
-### Bulk Editing <sup>NEW in v1.0.4</sup>
+### Bulk Editing
 
 - **Vault-Wide Changes**: Update all properties with a specific key/value at once
 - **Preview Before Apply**: See exactly which blocks will be affected
 - **Value Filtering**: Target specific values or match any value for a key
+
+### Block Graph View <sup>NEW in v1.0.5</sup>
+
+- **Visualize Relationships**: See block-to-block connections in an interactive graph
+- **Automatic Edge Detection**: Links like `blocked-by: ^task-2` become graph edges
+- **Status Coloring**: Nodes colored by status property (done=green, blocked=red)
+- **Click Navigation**: Double-click any node to jump to that block
 
 ---
 
@@ -264,6 +271,69 @@ Preview: 15 blocks will be updated
 
 ---
 
+## Block Graph View
+
+**New in v1.0.5**: Visualize block-level relationships in a dedicated graph view.
+
+```
+    [^task-1]───blocked-by───[^task-2]
+        │                       │
+    depends-on              depends-on
+        │                       │
+    [^setup]                [^api-refactor]
+```
+
+### How to Open
+
+1. Open Command Palette (`Cmd/Ctrl + P`)
+2. Search for "Block Properties: Open block graph"
+3. The graph opens in a new tab
+
+### How It Works
+
+The graph scans your vault for blocks that reference other blocks in their properties:
+
+```markdown
+^task-1 [status: todo, blocked-by: ^task-2]
+^task-2 [status: in-progress, depends-on: ^setup]
+^setup [status: done]
+```
+
+This creates:
+- **Nodes**: `^task-1`, `^task-2`, `^setup`
+- **Edges**: task-1 → task-2 (blocked-by), task-2 → setup (depends-on)
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Interactive** | Drag nodes, zoom, pan |
+| **Navigation** | Double-click a node to jump to that block |
+| **Tooltips** | Hover to see all properties |
+| **Status Colors** | Nodes colored by status (done=green, blocked=red, in-progress=blue) |
+| **Refresh** | Click ↻ button to rebuild the graph |
+| **Theme Support** | Adapts to Obsidian light/dark themes |
+
+### Use Cases
+
+#### Task Dependencies
+```markdown
+^setup-db [status: done]
+^implement-api [status: in-progress, depends-on: ^setup-db]
+^write-tests [status: blocked, blocked-by: ^implement-api]
+```
+→ Graph shows the dependency chain clearly
+
+#### Research Connections
+```markdown
+^hypothesis-a [status: testing]
+^experiment-1 [supports: ^hypothesis-a]
+^experiment-2 [contradicts: ^hypothesis-a]
+```
+→ See which experiments relate to which hypotheses
+
+---
+
 ### Autocomplete for Links
 
 When typing property values, the autocomplete system recognizes link syntax:
@@ -402,6 +472,7 @@ With auto-expand enabled, this becomes:
 | `Query block properties` | Search for blocks by property key/value |
 | `Open property panel` | Show sidebar with all properties in current note |
 | `Bulk edit properties` | Change property values across the vault |
+| `Open block graph` | Visualize block relationships in a graph view |
 
 ---
 
@@ -539,32 +610,17 @@ A: Navigation will fail with a "not found" notice. The property value is preserv
 
 ## Roadmap
 
-### Next Up: Block Graph View
-
-Visualize block-level relationships in a dedicated graph view:
-
-```
-    [^task-1]───blocked-by───[^task-2]
-        │                       │
-    depends-on              depends-on
-        │                       │
-    [^setup]                [^api-refactor]
-```
-
-- **Nodes**: Blocks with properties
-- **Edges**: Link properties (`blocked-by`, `depends-on`, `related-to`, etc.)
-- **Interactive**: Click to navigate, drag to rearrange, zoom/pan
-- **Filtering**: Show only blocks with specific keys or values
-
 ### Future
 
 - [ ] Dataview integration (API for external queries)
 - [ ] Property inheritance (section → subsection)
 - [ ] Typed properties (date picker, number validation)
 - [ ] Export/import properties
+- [ ] Graph filtering by property keys/values
 
 ### Completed
 
+- [x] ~~Block Graph View~~ *(v1.0.5)*
 - [x] ~~Bulk editing~~ *(v1.0.4)*
 - [x] ~~Conditional styling~~ *(v1.0.3)*
 - [x] ~~Linked properties~~ *(v1.0.2)*
@@ -572,6 +628,15 @@ Visualize block-level relationships in a dedicated graph view:
 ---
 
 ## Changelog
+
+### v1.0.5 — Block Graph View
+
+- **New**: Interactive graph view for block relationships
+- **New**: Automatic edge detection from block reference properties
+- **New**: Status-based node coloring (done, blocked, in-progress, etc.)
+- **New**: Double-click navigation to blocks
+- **New**: Refresh button to rebuild graph
+- **New**: Obsidian theme support (light/dark)
 
 ### v1.0.4 — Bulk Editing
 

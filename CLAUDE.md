@@ -11,6 +11,8 @@ Blocks can be annotated with metadata using the syntax: `^block-id [key: value, 
 
 **v1.0.4+**: Bulk editing allows changing properties across the entire vault.
 
+**v1.0.5+**: Block Graph View visualizes block relationships in an interactive graph.
+
 ## Tech Stack
 
 - **Language:** TypeScript (strict mode)
@@ -42,6 +44,9 @@ src/
 
   # Bulk Editing (v1.0.4)
   bulk-edit.ts         # Vault-wide property editing modal
+
+  # Block Graph View (v1.0.5)
+  graph-view.ts        # Interactive graph visualization of block relationships
 
 styles.css             # All plugin styles
 assets/                # Screenshots for README
@@ -119,6 +124,19 @@ status: draft → status: review (across all files)
 - Preview shows affected blocks before applying
 - Invalidates suggest cache after changes
 
+### Block Graph View (v1.0.5)
+```
+^task-1 [blocked-by: ^task-2] → Graph edge: task-1 --blocked-by--> task-2
+```
+- `graph-view.ts` provides `BlockGraphView` extending `ItemView`
+- Uses vis-network library for graph rendering
+- Scans vault for blocks with `^block-id` references in property values
+- Nodes represent blocks, edges represent relationships (property keys)
+- Status-based coloring: done=green, blocked=red, in-progress=blue
+- Double-click navigation via `navigateToBlock()` method
+- Force-directed layout with ForceAtlas2 physics solver
+- Theme-aware styling (light/dark mode detection)
+
 ## Commands
 
 | ID | Name | Description |
@@ -128,6 +146,7 @@ status: draft → status: review (across all files)
 | `query-block-properties` | Query block properties | Search vault by key/value |
 | `open-property-panel` | Open property panel | Show sidebar panel |
 | `bulk-edit-properties` | Bulk edit properties | Change values across vault |
+| `open-block-graph` | Open block graph | Visualize block relationships |
 
 ## Settings
 

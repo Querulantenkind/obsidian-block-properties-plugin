@@ -2,6 +2,7 @@ import {Editor, MarkdownPostProcessorContext, MarkdownView, Plugin, TFile, Works
 import {Extension} from '@codemirror/state';
 import {createBlockPropertiesExtension} from './editor-extension';
 import {PANEL_VIEW_TYPE, PropertyPanelView} from './panel';
+import {GRAPH_VIEW_TYPE, BlockGraphView} from './graph-view';
 import {parseBlockProperties} from './parser';
 import {QueryModal, ResultsModal, searchBlockProperties} from './query';
 import {BlockPropertiesSettingTab} from './settings';
@@ -32,6 +33,9 @@ export default class BlockPropertiesPlugin extends Plugin {
 
 		// Register the property panel view
 		this.registerView(PANEL_VIEW_TYPE, (leaf) => new PropertyPanelView(leaf, this));
+
+		// Register the block graph view
+		this.registerView(GRAPH_VIEW_TYPE, (leaf) => new BlockGraphView(leaf, this));
 
 		// Register autocomplete suggester
 		this.suggest = new BlockPropertiesSuggest(this);
@@ -153,6 +157,15 @@ export default class BlockPropertiesPlugin extends Plugin {
 			},
 		});
 
+		// Add command to open block graph
+		this.addCommand({
+			id: 'open-block-graph',
+			name: 'Open block graph',
+			callback: () => {
+				this.activateGraphView();
+			},
+		});
+
 		// Register Reading View post processor
 		this.registerMarkdownPostProcessor(this.postProcessor.bind(this));
 
@@ -186,6 +199,20 @@ export default class BlockPropertiesPlugin extends Plugin {
 		if (!leaf) return;
 
 		await leaf.setViewState({type: PANEL_VIEW_TYPE, active: true});
+		this.app.workspace.revealLeaf(leaf);
+	}
+
+	private async activateGraphView() {
+		const existing = this.app.workspace.getLeavesOfType(GRAPH_VIEW_TYPE);
+		const firstLeaf = existing[0];
+
+		if (firstLeaf) {
+			this.app.workspace.revealLeaf(firstLeaf);
+			return;
+		}
+
+		const leaf = this.app.workspace.getLeaf('tab');
+		await leaf.setViewState({type: GRAPH_VIEW_TYPE, active: true});
 		this.app.workspace.revealLeaf(leaf);
 	}
 
