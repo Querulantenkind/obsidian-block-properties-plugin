@@ -56,12 +56,35 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 - **Reading View Support**: Properties visible in both edit and reading mode
 - **Query Command**: Find all blocks with specific properties across your vault
 - **Property Panel**: Sidebar showing all block properties in the current note
+- **Inline Panel Editing**: Click any value to edit it directly in the sidebar
 - **Autocomplete**: Suggestions for keys and values based on your existing properties
+- **Property Templates**: Create reusable presets for common property combinations
 
 ### Property Panel
 
 ![Property Panel](assets/Property_Panel.png)
 *The Property Panel shows all blocks with properties in the current note, with clickable links for quick navigation*
+
+### Property Templates
+
+Define reusable property sets in Settings for common patterns:
+
+```
+Template: "task"
+Properties: status: todo, priority: medium, assignee: (empty)
+```
+
+Use templates via:
+- **Command**: "Insert property template" opens a picker
+- **Autocomplete**: Type `preset: task` and it auto-expands to the full property set
+
+### Inline Panel Editing
+
+Edit properties directly in the sidebar panel:
+- **Click** any value to edit it inline
+- **Dropdown** shows existing values from your vault
+- **Add** new properties with the "+ Add property" button
+- **Delete** properties with the × button
 
 ## Syntax
 
@@ -80,6 +103,7 @@ The properties appear after the block ID in square brackets, with key-value pair
 | Command | Description |
 |---------|-------------|
 | `Insert block property` | Add a block property template at cursor |
+| `Insert property template` | Choose from saved templates to insert |
 | `Query block properties` | Search for blocks by property key/value |
 | `Open property panel` | Show sidebar with all properties in current note |
 
@@ -107,6 +131,8 @@ npm run build
 | Display Mode | `Inline` (dimmed text) or `Badge` (compact icon) |
 | Property Color | Color for property text |
 | Opacity | Transparency level (0.1 - 1.0) |
+| Auto-expand presets | Automatically expand `preset: name` to full template |
+| Property Templates | Create, edit, and delete reusable property sets |
 
 ## Use Cases
 
