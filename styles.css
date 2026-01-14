@@ -1,0 +1,321 @@
+/* Block Properties Plugin Styles */
+
+.block-property {
+	color: var(--text-muted);
+	opacity: 0.6;
+	font-size: 0.9em;
+	font-family: var(--font-monospace);
+}
+
+/* Hover effect to make properties more visible */
+.block-property:hover {
+	opacity: 1;
+}
+
+/* Tooltip styles */
+.block-properties-tooltip {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-width: 120px;
+}
+
+.block-properties-tooltip-header {
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+	color: var(--text-muted);
+	margin-bottom: 6px;
+	padding-bottom: 4px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.block-properties-tooltip-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.block-properties-tooltip-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.block-properties-tooltip-key {
+	color: var(--text-accent);
+	font-weight: 500;
+}
+
+.block-properties-tooltip-value {
+	color: var(--text-normal);
+}
+
+/* Reading View specific styles */
+.block-property-reading {
+	cursor: help;
+	border-radius: 3px;
+	padding: 0 2px;
+	transition: opacity 0.15s ease;
+}
+
+.block-property-reading:hover {
+	background: var(--background-modifier-hover);
+}
+
+/* Query Modal styles */
+.block-properties-query-modal {
+	min-width: 350px;
+}
+
+.block-properties-results-modal {
+	min-width: 500px;
+	max-width: 700px;
+}
+
+.block-properties-results-count {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	margin-bottom: 16px;
+}
+
+.block-properties-no-results {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.block-properties-results-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.block-properties-result-item {
+	padding: 10px 12px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.block-properties-result-header {
+	margin-bottom: 6px;
+}
+
+.block-properties-result-link {
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.block-properties-result-link:hover {
+	text-decoration: underline;
+}
+
+.block-properties-result-props {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.block-properties-result-prop {
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+	padding: 2px 6px;
+	background: var(--background-primary);
+	border-radius: 4px;
+	color: var(--text-muted);
+}
+
+.block-properties-result-prop.is-match {
+	background: var(--text-accent);
+	color: var(--background-primary);
+}
+
+.block-properties-result-context {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Badge Mode styles */
+.block-property-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	margin-left: 4px;
+	background: var(--text-accent);
+	color: var(--background-primary);
+	font-size: 0.75em;
+	font-weight: 600;
+	border-radius: 9px;
+	cursor: help;
+	vertical-align: middle;
+	transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.block-property-badge:hover {
+	transform: scale(1.1);
+	background: var(--interactive-accent-hover);
+}
+
+/* Property Panel styles */
+.block-properties-panel {
+	padding: 12px;
+}
+
+.block-properties-panel-header h4 {
+	margin: 0 0 12px 0;
+	font-size: 1.1em;
+	color: var(--text-normal);
+}
+
+.block-properties-panel-empty {
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 0.9em;
+}
+
+.block-properties-panel-count {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	margin-bottom: 12px;
+}
+
+.block-properties-panel-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.block-properties-panel-item {
+	padding: 8px 10px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.block-properties-panel-item-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.block-properties-panel-link {
+	font-family: var(--font-monospace);
+	font-size: 0.9em;
+	font-weight: 500;
+	cursor: pointer;
+	color: var(--text-accent);
+}
+
+.block-properties-panel-link:hover {
+	text-decoration: underline;
+}
+
+.block-properties-panel-context {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+}
+
+.block-properties-panel-props {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.block-properties-panel-prop {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.85em;
+}
+
+.block-properties-panel-key {
+	color: var(--text-accent);
+	font-weight: 500;
+}
+
+.block-properties-panel-value {
+	color: var(--text-normal);
+}
+
+/* Summary section */
+.block-properties-panel-summary {
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: 12px;
+}
+
+.block-properties-panel-summary h5 {
+	margin: 0 0 8px 0;
+	font-size: 0.9em;
+	color: var(--text-muted);
+}
+
+.block-properties-panel-summary-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.block-properties-panel-summary-item {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.85em;
+}
+
+.block-properties-panel-summary-key {
+	color: var(--text-normal);
+}
+
+.block-properties-panel-summary-count {
+	color: var(--text-muted);
+	background: var(--background-secondary);
+	padding: 0 6px;
+	border-radius: 4px;
+	font-size: 0.9em;
+}
+
+/* Autocomplete Suggestion styles */
+.block-properties-suggestion {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 4px 8px;
+}
+
+.block-properties-suggestion-text {
+	font-weight: 500;
+}
+
+.block-properties-suggestion-meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.block-properties-suggestion-type {
+	font-size: 0.75em;
+	color: var(--text-muted);
+	background: var(--background-modifier-border);
+	padding: 2px 6px;
+	border-radius: 4px;
+	text-transform: uppercase;
+}
+
+.block-properties-suggestion-count {
+	font-size: 0.8em;
+	color: var(--text-muted);
+}

@@ -1,0 +1,197 @@
+import {
+	Editor,
+	EditorPosition,
+	EditorSuggest,
+	EditorSuggestContext,
+	EditorSuggestTriggerInfo,
+	TFile,
+} from 'obsidian';
+import type BlockPropertiesPlugin from './main';
+import {parseBlockProperties} from './parser';
+
+interface Suggestion {
+	type: 'key' | 'value';
+	text: string;
+	count: number;
+}
+
+export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
+	plugin: BlockPropertiesPlugin;
+	private cachedKeys: Map<string, number> = new Map();
+	private cachedValues: Map<string, Map<string, number>> = new Map();
+	private lastCacheUpdate = 0;
+	private readonly CACHE_TTL = 30000; // 30 seconds
+
+	constructor(plugin: BlockPropertiesPlugin) {
+		super(plugin.app);
+		this.plugin = plugin;
+	}
+
+	onTrigger(
+		cursor: EditorPosition,
+		editor: Editor,
+		file: TFile | null
+	): EditorSuggestTriggerInfo | null {
+		const line = editor.getLine(cursor.line);
+
+		// Check if we're inside a block property bracket [...]
+		const beforeCursor = line.slice(0, cursor.ch);
+		const afterCursor = line.slice(cursor.ch);
+
+		// Find the last [ before cursor
+		const bracketStart = beforeCursor.lastIndexOf('[');
+		if (bracketStart === -1) return null;
+
+		// Make sure there's no ] between [ and cursor
+		const textInBracket = beforeCursor.slice(bracketStart + 1);
+		if (textInBracket.includes(']')) return null;
+
+		// Make sure this is a block property (has ^id before [)
+		const beforeBracket = line.slice(0, bracketStart);
+		if (!beforeBracket.match(/\^[\w-]+\s*$/)) return null;
+
+		// Determine if we're typing a key or value
+		const lastComma = textInBracket.lastIndexOf(',');
+		const lastColon = textInBracket.lastIndexOf(':');
+
+		let start: number;
+		let query: string;
+
+		if (lastColon > lastComma) {
+			// We're typing a value (after colon)
+			start = bracketStart + 1 + lastColon + 1;
+			query = textInBracket.slice(lastColon + 1).trim();
+		} else {
+			// We're typing a key (after comma or at start)
+			start = bracketStart + 1 + (lastComma === -1 ? 0 : lastComma + 1);
+			query = lastComma === -1
+				? textInBracket.trim()
+				: textInBracket.slice(lastComma + 1).trim();
+		}
+
+		return {
+			start: {line: cursor.line, ch: start},
+			end: cursor,
+			query,
+		};
+	}
+
+	async getSuggestions(context: EditorSuggestContext): Promise<Suggestion[]> {
+		await this.updateCache();
+
+		const line = context.editor.getLine(context.start.line);
+		const beforeCursor = line.slice(0, context.end.ch);
+		const bracketStart = beforeCursor.lastIndexOf('[');
+		const textInBracket = beforeCursor.slice(bracketStart + 1);
+
+		const lastComma = textInBracket.lastIndexOf(',');
+		const lastColon = textInBracket.lastIndexOf(':');
+
+		const query = context.query.toLowerCase();
+
+		if (lastColon > lastComma) {
+			// Suggest values for the current key
+			const keyStart = lastComma === -1 ? 0 : lastComma + 1;
+			const currentKey = textInBracket.slice(keyStart, lastColon).trim();
+
+			const values = this.cachedValues.get(currentKey) || new Map();
+			return Array.from(values.entries())
+				.filter(([value]) => value.toLowerCase().includes(query))
+				.map(([text, count]) => ({type: 'value' as const, text, count}))
+				.sort((a, b) => b.count - a.count)
+				.slice(0, 10);
+		} else {
+			// Suggest keys
+			return Array.from(this.cachedKeys.entries())
+				.filter(([key]) => key.toLowerCase().includes(query))
+				.map(([text, count]) => ({type: 'key' as const, text, count}))
+				.sort((a, b) => b.count - a.count)
+				.slice(0, 10);
+		}
+	}
+
+	renderSuggestion(suggestion: Suggestion, el: HTMLElement): void {
+		el.addClass('block-properties-suggestion');
+
+		const text = el.createEl('span', {
+			text: suggestion.text,
+			cls: 'block-properties-suggestion-text',
+		});
+
+		const meta = el.createEl('span', {
+			cls: 'block-properties-suggestion-meta',
+		});
+
+		meta.createEl('span', {
+			text: suggestion.type === 'key' ? 'key' : 'value',
+			cls: 'block-properties-suggestion-type',
+		});
+
+		meta.createEl('span', {
+			text: `${suggestion.count}`,
+			cls: 'block-properties-suggestion-count',
+		});
+	}
+
+	selectSuggestion(suggestion: Suggestion, evt: MouseEvent | KeyboardEvent): void {
+		if (!this.context) return;
+
+		const {editor, start, end} = this.context;
+
+		let replacement = suggestion.text;
+
+		if (suggestion.type === 'key') {
+			replacement = suggestion.text + ': ';
+		}
+
+		editor.replaceRange(replacement, start, end);
+
+		// Move cursor after the replacement
+		const newCh = start.ch + replacement.length;
+		editor.setCursor({line: start.line, ch: newCh});
+	}
+
+	private async updateCache() {
+		const now = Date.now();
+		if (now - this.lastCacheUpdate < this.CACHE_TTL) {
+			return;
+		}
+
+		this.cachedKeys.clear();
+		this.cachedValues.clear();
+
+		const files = this.app.vault.getMarkdownFiles();
+
+		for (const file of files) {
+			try {
+				const content = await this.app.vault.cachedRead(file);
+				const lines = content.split('\n');
+
+				for (const line of lines) {
+					const props = parseBlockProperties(line);
+
+					for (const prop of props) {
+						for (const p of prop.properties) {
+							// Count keys
+							this.cachedKeys.set(
+								p.key,
+								(this.cachedKeys.get(p.key) || 0) + 1
+							);
+
+							// Count values per key
+							if (!this.cachedValues.has(p.key)) {
+								this.cachedValues.set(p.key, new Map());
+							}
+							const valueMap = this.cachedValues.get(p.key)!;
+							valueMap.set(p.value, (valueMap.get(p.value) || 0) + 1);
+						}
+					}
+				}
+			} catch {
+				// Skip files that can't be read
+			}
+		}
+
+		this.lastCacheUpdate = now;
+	}
+}
