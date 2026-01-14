@@ -539,13 +539,35 @@ A: Navigation will fail with a "not found" notice. The property value is preserv
 
 ## Roadmap
 
+### Next Up: Block Graph View
+
+Visualize block-level relationships in a dedicated graph view:
+
+```
+    [^task-1]───blocked-by───[^task-2]
+        │                       │
+    depends-on              depends-on
+        │                       │
+    [^setup]                [^api-refactor]
+```
+
+- **Nodes**: Blocks with properties
+- **Edges**: Link properties (`blocked-by`, `depends-on`, `related-to`, etc.)
+- **Interactive**: Click to navigate, drag to rearrange, zoom/pan
+- **Filtering**: Show only blocks with specific keys or values
+
+### Future
+
 - [ ] Dataview integration (API for external queries)
 - [ ] Property inheritance (section → subsection)
 - [ ] Typed properties (date picker, number validation)
 - [ ] Export/import properties
-- [x] ~~Bulk editing~~ *(Added in v1.0.4)*
-- [x] ~~Conditional styling~~ *(Added in v1.0.3)*
-- [x] ~~Linked properties~~ *(Added in v1.0.2)*
+
+### Completed
+
+- [x] ~~Bulk editing~~ *(v1.0.4)*
+- [x] ~~Conditional styling~~ *(v1.0.3)*
+- [x] ~~Linked properties~~ *(v1.0.2)*
 
 ---
 
