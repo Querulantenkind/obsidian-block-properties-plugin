@@ -10,7 +10,7 @@
 		"lint": "eslint ."
 	},
 	"keywords": [],
-	"author": "Luca",
+	"author": "Luca Gabriel Oelfke",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
