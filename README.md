@@ -16,6 +16,16 @@
 
 ---
 
+## Quick Start
+
+```markdown
+Any paragraph with a block ID. ^my-block [status: draft, priority: high]
+```
+
+That's it. Properties appear after the block ID in `[key: value]` format.
+
+---
+
 ## The Problem
 
 Obsidian's properties exist only at the note level. But knowledge isn't atomic — notes contain structure, and that structure carries meaning:
@@ -127,6 +137,28 @@ Smith (2023) argues for X. ^cite-1 [type: journal, supports: hypothesis-a]
 
 Johnson (2022) contradicts this. ^cite-2 [type: book, contradicts: hypothesis-a]
 ```
+
+## FAQ
+
+**Q: How is this different from YAML frontmatter properties?**
+A: Frontmatter applies to the entire note. Block Properties apply to individual paragraphs, lists, or sections within a note.
+
+**Q: Do block properties work with Dataview?**
+A: Not yet. Dataview integration is on the roadmap. Currently, use the built-in Query command to search properties.
+
+**Q: Can I use block properties without a block ID?**
+A: No. The syntax requires a block ID (`^block-id`) before the properties. This ensures each block remains linkable.
+
+**Q: Will this break my existing block references?**
+A: No. Standard block IDs (`^block-id`) work exactly as before. Properties are purely additive.
+
+## Limitations
+
+- **No nested properties**: Values are plain strings, no objects or arrays
+- **No property types**: All values are treated as text (no dates, numbers, or links yet)
+- **Single line only**: Properties must be on the same line as the block ID
+- **No Dataview integration**: Queries are plugin-internal only (for now)
+- **No mobile testing**: Should work, but not extensively tested on mobile
 
 ## Roadmap
 
