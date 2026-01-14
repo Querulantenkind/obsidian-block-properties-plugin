@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Obsidian](https://img.shields.io/badge/Obsidian-0.15.0+-7C3AED?style=flat-square&logo=obsidian&logoColor=white)](https://obsidian.md)
 
-*Extend block-ID syntax with inline key-value properties*
+*Extend block references with inline key-value properties*
 
-![Block Properties in action](assets/Showcase_Block_Properties.png)
+![Block Properties Showcase](assets/Showcase_Block_Properties.png)
 
 </div>
 
@@ -28,17 +28,17 @@ That's it. Properties appear after the block ID in `[key: value]` format.
 
 ## The Problem
 
-Obsidian's properties exist only at the note level. But knowledge isn't atomic — notes contain structure, and that structure carries meaning:
+Obsidian's properties exist only at the note level. But knowledge isn't atomic—notes contain structure, and that structure carries meaning:
 
 - **Documentation**: Some sections are stable, others deprecated, others experimental
 - **Long-form writing**: Different passages have different states, POVs, timelines
 - **Research**: Claims from different sources have different confidence levels
 
-Currently, there's no way to attach metadata below the note level without fragmenting your content into separate files.
+There's no native way to attach metadata below the note level without fragmenting content into separate files.
 
 ## The Solution
 
-Block Properties extends Obsidian's block-ID syntax to support inline metadata:
+Block Properties extends Obsidian's block reference syntax to support inline metadata:
 
 ```markdown
 This section is stable. ^api-docs [status: stable, version: 2.0]
@@ -46,255 +46,69 @@ This section is stable. ^api-docs [status: stable, version: 2.0]
 This needs review. ^draft-section [status: draft, reviewer: pending]
 ```
 
+---
+
 ## Features
 
-### Core Features
+### Core
 
-- **Inline Syntax**: Natural extension of existing `^block-id` syntax
-- **Two Display Modes**:
-  - *Inline*: Properties shown as dimmed text
-  - *Badge*: Compact numbered badge
-- **Hover Tooltips**: See all properties at a glance
-- **Reading View Support**: Properties visible in both edit and reading mode
-- **Query Command**: Find all blocks with specific properties across your vault
+- **Inline Syntax** — Natural extension of existing `^block-id` syntax
+- **Display Modes** — Inline (dimmed text) or Badge (compact count)
+- **Hover Tooltips** — See all properties at a glance
+- **Reading View** — Properties visible in both edit and reading mode
+- **Query Command** — Find blocks by property across your vault
 
 ### Property Panel
 
-- **Sidebar View**: Shows all block properties in the current note
-- **Inline Editing**: Click any value to edit it directly
-- **Quick Navigation**: Click block IDs to jump to that location
-- **Property Summary**: See which keys are used and how often
-
-### Autocomplete & Templates
-
-- **Smart Suggestions**: Keys and values based on your existing properties
-- **Property Templates**: Reusable presets for common property combinations
-- **Auto-expand**: Type `preset: task` and it expands to the full template
+- **Sidebar View** — All block properties in the current note
+- **Inline Editing** — Click any value to edit directly
+- **Quick Navigation** — Click block IDs to jump to location
+- **Property Summary** — See which keys are used and how often
 
 ### Linked Properties
 
-- **Note Links**: Reference other notes with `[[Note]]` syntax
-- **Block References**: Link to other blocks with `^block-id` syntax
-- **Click Navigation**: Click links in the panel or Cmd/Ctrl+Click in the editor
-- **Backlink Tracking**: See which blocks reference the current block
-- **Link Autocomplete**: Type `[[` for notes or `^` for block suggestions
+- **Note Links** — Reference notes with `[[Note]]` syntax
+- **Block References** — Link blocks with `^block-id` syntax
+- **Click Navigation** — Navigate links from panel or editor
+- **Backlink Tracking** — See which blocks reference each other
 
 ### Conditional Styling
 
-- **Automatic CSS Classes**: Every property generates `bp-{key}-{value}` classes
-- **Styling Target**: Apply styles to property text or entire line
-- **Preset Styles**: Built-in visual styles for common patterns
-- **Custom Rules**: Define your own key-value → class mappings
+- **Auto CSS Classes** — Every property generates `bp-{key}-{value}`
+- **Styling Target** — Apply to property text or entire line
+- **Preset Styles** — Built-in styles for common patterns
+- **Custom Rules** — Define your own key-value → class mappings
 
 ### Bulk Editing
 
-- **Vault-Wide Changes**: Update all properties with a specific key/value at once
-- **Preview Before Apply**: See exactly which blocks will be affected
-- **Value Filtering**: Target specific values or match any value for a key
+- **Vault-Wide Changes** — Update properties across all files at once
+- **Preview First** — See exactly which blocks will be affected
+- **Value Filtering** — Target specific values or match any
 
-### Block Graph View <sup>NEW in v1.0.5</sup>
+### Block Graph View
 
-- **Visualize Relationships**: See block-to-block connections in an interactive graph
-- **Automatic Edge Detection**: Links like `blocked-by: ^task-2` become graph edges
-- **Status Coloring**: Nodes colored by status property (done=green, blocked=red)
-- **Click Navigation**: Double-click any node to jump to that block
-
----
-
-## Linked Properties
-
-**New in v1.0.2**: Property values can now contain links to notes and blocks, enabling relationship tracking between blocks.
-
-![Linked Properties](assets/Linked_Properties.png)
-*Note links and block references with clickable navigation*
-
-### Syntax
-
-```markdown
-Note links:
-^task-1 [status: active, docs: [[Project Documentation]]]
-
-Block references:
-^subtask [status: blocked, blocked-by: ^parent-task]
-
-Mixed content:
-^feature [spec: [[Design Doc]], depends: ^api-refactor, status: planned]
-```
-
-### Navigation
-
-Links in property values are fully interactive:
-
-| Location | Action |
-|----------|--------|
-| Property Panel | Click on any link to navigate |
-| Editor | `Cmd/Ctrl + Click` on a link |
-| Hover Tooltip | Links are highlighted for visibility |
-
-### Backlinks
-
-The Property Panel includes a **"Referenced by"** section that shows which blocks link to each block in the current file:
-
-```
-^parent-task [status: in-progress]
-
-Referenced by:
-  → subtask-1 (blocked-by)
-  → subtask-2 (depends-on)
-```
-
-This creates a bidirectional relationship view without leaving the current note.
-
----
-
-## Conditional Styling
-
-**New in v1.0.3**: Blocks automatically receive CSS classes based on their property values, enabling visual differentiation.
-
-![Conditional Styling](assets/Conditional_Styling.png)
-*Blocks with `status: deprecated` are automatically styled with strikethrough*
-
-### How It Works
-
-Every property generates a CSS class in the format `bp-{key}-{value}`:
-
-```markdown
-^task-1 [status: done, priority: high]
-```
-
-This block receives classes: `bp-status-done`, `bp-priority-high`
-
-### Styling Target
-
-Choose where styles are applied:
-
-| Target | Effect |
-|--------|--------|
-| **Property** | Only the `[...]` text is styled |
-| **Line** | The entire line/paragraph is styled |
-
-### Preset Styles
-
-Enable built-in styles for common property patterns:
-
-| Property | Effect |
-|----------|--------|
-| `status: done` / `completed` | Strikethrough, reduced opacity |
-| `status: blocked` | Red left border |
-| `status: in-progress` / `active` | Blue background tint |
-| `priority: high` / `urgent` | Red text/background |
-| `priority: low` | Reduced opacity |
-| `type: warning` | Orange background |
-| `type: deprecated` | Strikethrough, red, faded |
-| `type: experimental` | Italic, purple tint |
-| `status: draft` | Yellow background tint |
-
-### Custom Rules
-
-Define your own styling rules in Settings:
-
-```
-Key: status
-Value: review (or * for any value)
-Class: my-review-style
-```
-
-Then add CSS in your vault's snippets:
-
-```css
-.my-review-style {
-  background: rgba(255, 200, 0, 0.2);
-  border-left: 3px solid orange;
-}
-```
-
-### Use Cases
-
-#### Task Management
-```markdown
-^task-done [status: done]        /* Strikethrough */
-^task-blocked [status: blocked]  /* Red border */
-^task-urgent [priority: high]    /* Red highlight */
-```
-
-#### Documentation Status
-```markdown
-^api-stable [type: stable]           /* Green text */
-^api-deprecated [type: deprecated]   /* Strikethrough, red */
-^api-experimental [type: experimental] /* Italic, purple */
-```
-
-#### Content Workflow
-```markdown
-^section-draft [status: draft]       /* Yellow tint */
-^section-review [status: in-progress] /* Blue tint */
-^section-final [status: done]        /* Strikethrough */
-```
-
----
-
-## Bulk Editing
-
-**New in v1.0.4**: Change property values across your entire vault in one operation.
-
-### How to Use
-
-1. Open Command Palette → "Bulk edit properties"
-2. Select a property key from the dropdown
-3. Optionally filter by current value (leave empty for "any")
-4. Enter the new value
-5. Click "Preview Changes" to see affected blocks
-6. Click "Apply Changes" to update all matches
-
-### Example
-
-Change all `status: draft` to `status: review`:
-
-```
-Property key:    status
-Current value:   draft
-New value:       review
-
-Preview: 15 blocks will be updated
-├── notes/project.md → ^task-1
-│   status: draft → review
-├── notes/ideas.md → ^section-2
-│   status: draft → review
-└── ...
-```
-
-### Safety Features
-
-- **Preview first**: Always see what will change before applying
-- **File grouping**: Minimizes file operations for better performance
-- **Error handling**: Failed updates are reported, successful ones proceed
+- **Visualize Relationships** — See block connections as interactive graph
+- **Auto Edge Detection** — Links like `blocked-by: ^task-2` become edges
+- **Status Coloring** — Nodes colored by status property
+- **Click Navigation** — Double-click to jump to any block
 
 ---
 
 ## Block Graph View
 
-**New in v1.0.5**: Visualize block-level relationships in a dedicated graph view.
+Visualize block-level relationships in a dedicated graph view.
 
 ![Block Graph View](assets/Block_Graph_View.png)
-*Interactive graph showing block relationships with status-based coloring*
 
-```
-    [^task-1]───blocked-by───[^task-2]
-        │                       │
-    depends-on              depends-on
-        │                       │
-    [^setup]                [^api-refactor]
-```
-
-### How to Open
+### Opening the Graph
 
 1. Open Command Palette (`Cmd/Ctrl + P`)
-2. Search for "Block Properties: Open block graph"
+2. Search for **"Block Properties: Open block graph"**
 3. The graph opens in a new tab
 
 ### How It Works
 
-The graph scans your vault for blocks that reference other blocks in their properties:
+The graph scans your vault for blocks that reference other blocks:
 
 ```markdown
 ^task-1 [status: todo, blocked-by: ^task-2]
@@ -306,76 +120,103 @@ This creates:
 - **Nodes**: `^task-1`, `^task-2`, `^setup`
 - **Edges**: task-1 → task-2 (blocked-by), task-2 → setup (depends-on)
 
-### Features
+### Graph Features
 
 | Feature | Description |
 |---------|-------------|
 | **Interactive** | Drag nodes, zoom, pan |
-| **Navigation** | Double-click a node to jump to that block |
+| **Navigation** | Double-click to jump to block |
 | **Tooltips** | Hover to see all properties |
-| **Status Colors** | Nodes colored by status (done=green, blocked=red, in-progress=blue) |
-| **Refresh** | Click ↻ button to rebuild the graph |
-| **Theme Support** | Adapts to Obsidian light/dark themes |
-
-### Use Cases
-
-#### Task Dependencies
-```markdown
-^setup-db [status: done]
-^implement-api [status: in-progress, depends-on: ^setup-db]
-^write-tests [status: blocked, blocked-by: ^implement-api]
-```
-→ Graph shows the dependency chain clearly
-
-#### Research Connections
-```markdown
-^hypothesis-a [status: testing]
-^experiment-1 [supports: ^hypothesis-a]
-^experiment-2 [contradicts: ^hypothesis-a]
-```
-→ See which experiments relate to which hypotheses
+| **Status Colors** | done=green, blocked=red, in-progress=blue |
+| **Refresh** | Click ↻ to rebuild graph |
+| **Themes** | Adapts to light/dark mode |
 
 ---
 
-### Autocomplete for Links
+## Linked Properties
 
-When typing property values, the autocomplete system recognizes link syntax:
+Property values can contain links to notes and blocks.
 
-- Type `[[` → Shows notes from your vault
-- Type `^` → Shows block IDs from your vault
+![Linked Properties](assets/Linked_Properties.png)
 
-Select a suggestion to insert the complete link syntax.
-
-### Use Cases for Linked Properties
-
-#### Task Dependencies
+### Syntax
 
 ```markdown
-^setup-database [status: done, type: infrastructure]
+Note links:
+^task-1 [docs: [[Project Documentation]]]
 
-^implement-api [status: in-progress, depends-on: ^setup-database]
+Block references:
+^subtask [blocked-by: ^parent-task]
 
-^write-tests [status: blocked, blocked-by: ^implement-api]
+Mixed:
+^feature [spec: [[Design Doc]], depends: ^api-refactor]
 ```
 
-#### Cross-Reference Documentation
+### Navigation
 
-```markdown
-^api-endpoint [method: POST, spec: [[API Specification]], changelog: [[v2.0 Release Notes]]]
+| Location | Action |
+|----------|--------|
+| Property Panel | Click any link to navigate |
+| Editor | `Cmd/Ctrl + Click` on link |
+
+### Backlinks
+
+The Property Panel shows a **"Referenced by"** section:
+
+```
+^parent-task [status: in-progress]
+
+Referenced by:
+  → subtask-1 (blocked-by)
+  → subtask-2 (depends-on)
 ```
 
-#### Research Connections
+---
+
+## Conditional Styling
+
+Blocks automatically receive CSS classes based on property values.
+
+![Conditional Styling](assets/Conditional_Styling.png)
+
+### How It Works
+
+Every property generates a class `bp-{key}-{value}`:
 
 ```markdown
-^hypothesis-a [status: supported, evidence: ^experiment-1, contradicts: ^old-theory]
-
-^experiment-1 [date: 2024-01, supports: ^hypothesis-a, methodology: [[Research Methods]]]
+^task-1 [status: done, priority: high]
+→ Classes: bp-status-done, bp-priority-high
 ```
 
-#### Content Relationships
+### Styling Target
 
-```markdown
-^chapter-3 [status: draft, continues: ^chapter-2, foreshadows: ^chapter-7]
+| Target | Effect |
+|--------|--------|
+| **Property** | Only `[...]` text is styled |
+| **Line** | Entire line/paragraph is styled |
+
+### Preset Styles
+
+| Property | Effect |
+|----------|--------|
+| `status: done` | Strikethrough, reduced opacity |
+| `status: blocked` | Red left border |
+| `status: in-progress` | Blue background tint |
+| `priority: high` | Red text/background |
+| `priority: low` | Reduced opacity |
+| `type: deprecated` | Strikethrough, red, faded |
+| `type: experimental` | Italic, purple tint |
+| `status: draft` | Yellow background tint |
+
+### Custom Rules
+
+Define rules in Settings → add CSS in your snippets:
+
+```css
+.my-review-style {
+  background: rgba(255, 200, 0, 0.2);
+  border-left: 3px solid orange;
+}
 ```
 
 ---
@@ -383,64 +224,79 @@ Select a suggestion to insert the complete link syntax.
 ## Property Panel
 
 ![Property Panel](assets/Property_Panel.png)
-*The Property Panel shows all blocks with properties in the current note*
 
-### Panel Features
+### Features
 
-- **Block Overview**: See all blocks with their properties at a glance
-- **Context Preview**: Shows the text before each block ID for easy identification
-- **Quick Navigation**: Click any block ID to jump to that line
-- **Inline Editing**: Click any value to modify it with dropdown suggestions
-- **Add/Delete**: Add new properties or remove existing ones
-- **Summary Section**: Statistics on property key usage
-- **Backlinks Section**: Shows incoming references (when linked properties are enabled)
+- **Block Overview** — All blocks with properties at a glance
+- **Context Preview** — Text before each block ID
+- **Quick Navigation** — Click block ID to jump
+- **Inline Editing** — Click value to modify with suggestions
+- **Add/Delete** — Manage properties directly
+- **Summary** — Statistics on property usage
+- **Backlinks** — Incoming references (when enabled)
 
 ### Inline Editing
 
-1. **Click** on any property value to start editing
-2. **Dropdown** appears with suggestions from your vault
+1. **Click** any property value
+2. **Dropdown** appears with suggestions
 3. **Enter** to save, **Escape** to cancel
-4. Changes are immediately written to the file
+
+---
+
+## Bulk Editing
+
+Change property values across your entire vault.
+
+### Usage
+
+1. Command Palette → **"Bulk edit properties"**
+2. Select property key
+3. Optionally filter by current value
+4. Enter new value
+5. **Preview** → **Apply**
+
+### Example
+
+```
+Property key:    status
+Current value:   draft
+New value:       review
+
+Preview: 15 blocks will be updated
+├── notes/project.md → ^task-1
+│   status: draft → review
+└── ...
+```
 
 ---
 
 ## Property Templates
 
-Define reusable property sets in Settings for common patterns:
+Define reusable property sets in Settings:
 
 ```
 Template: "task"
 Properties: status: todo, priority: medium, assignee: (empty)
-
-Template: "documentation"
-Properties: status: draft, version: 1.0, reviewed: false
 ```
 
 ### Using Templates
 
-**Via Command**: Use "Insert property template" to open a picker modal
+**Via Command**: "Insert property template" opens picker
 
-**Via Autocomplete**: Type `preset: ` in a property value:
-```markdown
-^new-task [preset: task]
-```
-With auto-expand enabled, this becomes:
-```markdown
-^new-task [status: todo, priority: medium, assignee: ]
-```
+**Via Autocomplete**: Type `preset: task` → auto-expands to full template
 
 ---
 
 ## Syntax Reference
 
-### Basic Syntax
+### Basic
 
 ```markdown
 ^block-id [key: value]
-^block-id [key1: value1, key2: value2, key3: value3]
+^block-id [key1: value1, key2: value2]
 ```
 
-### With Links (v1.0.2+)
+### With Links
 
 ```markdown
 ^block-id [ref: [[Note Name]]]
@@ -451,17 +307,16 @@ With auto-expand enabled, this becomes:
 ### Whitespace
 
 ```markdown
-^id[key:value]           ✓ Works (no spaces)
-^id [key: value]         ✓ Works (spaces around brackets)
-^id [ key : value ]      ✓ Works (spaces inside)
+^id[key:value]           ✓ Works
+^id [key: value]         ✓ Works
+^id [ key : value ]      ✓ Works
 ```
 
 ### Special Characters
 
 ```markdown
 ^id [message: Hello, World]     ✗ Comma splits properties
-^id [message: Hello World]      ✓ No comma in value
-^id [url: https://example.com]  ✓ Colons in values are fine
+^id [url: https://example.com]  ✓ Colons in values OK
 ```
 
 ---
@@ -470,51 +325,46 @@ With auto-expand enabled, this becomes:
 
 | Command | Description |
 |---------|-------------|
-| `Insert block property` | Add a block property template at cursor |
-| `Insert property template` | Choose from saved templates to insert |
-| `Query block properties` | Search for blocks by property key/value |
-| `Open property panel` | Show sidebar with all properties in current note |
-| `Bulk edit properties` | Change property values across the vault |
-| `Open block graph` | Visualize block relationships in a graph view |
+| Insert block property | Add block property at cursor |
+| Insert property template | Choose from saved templates |
+| Query block properties | Search by property key/value |
+| Open property panel | Show sidebar panel |
+| Bulk edit properties | Change values across vault |
+| Open block graph | Visualize block relationships |
 
 ---
 
 ## Settings
 
 ![Settings](assets/Settings.png)
-*All settings including Conditional Styling options*
 
 | Setting | Description |
 |---------|-------------|
-| **Display** | |
-| Display Mode | `Inline` (dimmed text) or `Badge` (compact icon) |
-| Property Color | Color for property text |
-| Opacity | Transparency level (0.1 - 1.0) |
-| **Linked Properties** | |
-| Enable linked properties | Allow `[[Note]]` and `^block-id` in values |
-| Show backlinks in panel | Display "Referenced by" section |
-| **Conditional Styling** | |
-| Enable conditional styling | Add CSS classes based on property values |
-| Styling target | Apply to `Property only` or `Entire line` |
-| Use preset styles | Enable built-in styles for status/priority/type |
-| Custom style rules | Define key-value → class mappings |
-| **Templates** | |
-| Auto-expand presets | Automatically expand `preset: name` to full template |
-| Property Templates | Create, edit, and delete reusable property sets |
+| **Display Mode** | Inline or Badge |
+| **Property Color** | Color for property text |
+| **Opacity** | Transparency (0.1–1.0) |
+| **Enable linked properties** | Allow `[[Note]]` and `^block` in values |
+| **Show backlinks** | Display "Referenced by" section |
+| **Enable conditional styling** | Add CSS classes from properties |
+| **Styling target** | Property only or entire line |
+| **Use preset styles** | Built-in visual styles |
+| **Custom rules** | Key-value → class mappings |
+| **Auto-expand presets** | Expand `preset: name` automatically |
+| **Templates** | Manage property templates |
 
 ---
 
 ## Installation
 
-### Manual Installation
+### Manual
 
-1. Download the latest release from [GitHub Releases](https://github.com/Querulantenkind/obsidian-block-properties-plugin/releases)
-2. Extract `main.js`, `manifest.json`, and `styles.css` to `.obsidian/plugins/block-properties/`
-3. Enable the plugin in Obsidian settings
+1. Download latest release from [GitHub Releases](https://github.com/Querulantenkind/obsidian-block-properties-plugin/releases)
+2. Extract to `.obsidian/plugins/block-properties/`
+3. Enable in Settings → Community plugins
 
-### BRAT (Beta Reviewer's Auto-update Tool)
+### BRAT
 
-1. Install the BRAT plugin
+1. Install BRAT plugin
 2. Add `Querulantenkind/obsidian-block-properties-plugin`
 3. Enable Block Properties
 
@@ -531,102 +381,79 @@ npm run build
 
 ## Use Cases
 
-### Technical Documentation
-
-```markdown
-## Authentication API ^auth-api [status: stable, version: 2.0, spec: [[API Spec]]]
-
-## Legacy Endpoints ^legacy [status: deprecated, removed-in: v3.0, migration: [[Migration Guide]]]
-```
-
 ### Project Management
 
 ```markdown
-Implement dashboard redesign. ^task-1 [status: in-progress, priority: high, assignee: luca]
+^setup-db [status: done, type: infrastructure]
+^implement-api [status: in-progress, depends-on: ^setup-db]
+^write-tests [status: blocked, blocked-by: ^implement-api]
+```
 
-Fix login bug. ^task-2 [status: blocked, blocked-by: ^task-1, issue: [[Bug Reports#login]]]
+### Documentation
 
-Write documentation. ^task-3 [status: pending, depends-on: ^task-1, output: [[User Guide]]]
+```markdown
+^auth-api [status: stable, version: 2.0]
+^legacy-endpoint [status: deprecated, removed-in: v3.0]
+```
+
+### Research
+
+```markdown
+^hypothesis-a [status: testing]
+^experiment-1 [supports: ^hypothesis-a, methodology: [[Methods]]]
+^experiment-2 [contradicts: ^hypothesis-a]
 ```
 
 ### Creative Writing
 
 ```markdown
-The sun rose slowly. ^scene-1 [draft: 2, pov: narrator, timeline: present]
-
-She remembered that summer. ^flashback-1 [draft: 1, pov: maria, timeline: past, continues: ^scene-1]
-```
-
-### Research Notes
-
-```markdown
-Smith (2023) argues for X. ^cite-1 [type: journal, supports: ^hypothesis-a, pdf: [[Papers/Smith2023]]]
-
-Johnson (2022) contradicts this. ^cite-2 [type: book, contradicts: ^hypothesis-a, notes: [[Reading Notes#johnson]]]
-```
-
-### Knowledge Management
-
-```markdown
-^concept-entropy [domain: physics, related: ^concept-thermodynamics, explained: [[Physics/Entropy]]]
-
-^concept-thermodynamics [domain: physics, parent: ^concept-entropy, applications: [[Engineering/Heat Engines]]]
+^scene-1 [draft: 2, pov: narrator, timeline: present]
+^flashback [draft: 1, pov: maria, continues: ^scene-1]
 ```
 
 ---
 
 ## FAQ
 
-**Q: How is this different from YAML frontmatter properties?**
-A: Frontmatter applies to the entire note. Block Properties apply to individual paragraphs, lists, or sections within a note.
+**How is this different from YAML frontmatter?**
+Frontmatter applies to entire notes. Block Properties apply to individual paragraphs or sections.
 
-**Q: Do block properties work with Dataview?**
-A: Not yet. Dataview integration is on the roadmap. Currently, use the built-in Query command to search properties.
+**Does it work with Dataview?**
+Not yet. Dataview integration is planned. Use the built-in Query command for now.
 
-**Q: Can I use block properties without a block ID?**
-A: No. The syntax requires a block ID (`^block-id`) before the properties. This ensures each block remains linkable.
+**Will this break existing block references?**
+No. Standard `^block-id` syntax works as before. Properties are additive.
 
-**Q: Will this break my existing block references?**
-A: No. Standard block IDs (`^block-id`) work exactly as before. Properties are purely additive.
-
-**Q: Do linked properties create actual Obsidian links?**
-A: The links are recognized and navigable within the plugin, but they don't appear in Obsidian's native backlinks pane. The plugin maintains its own backlink index.
-
-**Q: Can I link to blocks in other files?**
-A: Yes! Block references (`^block-id`) search across your entire vault. The first matching block is used.
-
-**Q: What happens if a linked note or block doesn't exist?**
-A: Navigation will fail with a "not found" notice. The property value is preserved as-is.
+**Can I link to blocks in other files?**
+Yes. Block references search across your entire vault.
 
 ---
 
 ## Limitations
 
-- **No nested properties**: Values are plain strings, no objects or arrays
-- **Single line only**: Properties must be on the same line as the block ID
-- **No Dataview integration**: Queries are plugin-internal only (for now)
-- **No mobile testing**: Should work, but not extensively tested on mobile
-- **Comma in values**: Commas split properties, so values cannot contain commas
-- **Backlinks are plugin-only**: Don't appear in Obsidian's native backlinks
+- No nested properties (values are plain strings)
+- Properties must be on same line as block ID
+- Commas in values not supported (splits properties)
+- Backlinks are plugin-only (not in Obsidian's native backlinks)
 
 ---
 
 ## Roadmap
 
-### Future
+### Planned
 
-- [ ] Dataview integration (API for external queries)
-- [ ] Property inheritance (section → subsection)
-- [ ] Typed properties (date picker, number validation)
-- [ ] Export/import properties
-- [ ] Graph filtering by property keys/values
+- [ ] Dataview integration
+- [ ] Property inheritance
+- [ ] Typed properties (date picker, validation)
+- [ ] Graph filtering by property
+- [ ] Export/import
 
 ### Completed
 
-- [x] ~~Block Graph View~~ *(v1.0.5)*
-- [x] ~~Bulk editing~~ *(v1.0.4)*
-- [x] ~~Conditional styling~~ *(v1.0.3)*
-- [x] ~~Linked properties~~ *(v1.0.2)*
+- [x] Block Graph View *(v1.0.5)*
+- [x] Bulk Editing *(v1.0.4)*
+- [x] Conditional Styling *(v1.0.3)*
+- [x] Linked Properties *(v1.0.2)*
 
 ---
 
@@ -634,48 +461,40 @@ A: Navigation will fail with a "not found" notice. The property value is preserv
 
 ### v1.0.5 — Block Graph View
 
-- **New**: Interactive graph view for block relationships
-- **New**: Automatic edge detection from block reference properties
-- **New**: Status-based node coloring (done, blocked, in-progress, etc.)
-- **New**: Double-click navigation to blocks
-- **New**: Refresh button to rebuild graph
-- **New**: Obsidian theme support (light/dark)
+- Interactive graph view for block relationships
+- Automatic edge detection from block references
+- Status-based node coloring
+- Double-click navigation
+- Theme support
 
 ### v1.0.4 — Bulk Editing
 
-- **New**: Bulk edit command to change properties across the vault
-- **New**: Preview affected blocks before applying changes
-- **New**: Filter by specific value or match any value for a key
-- **New**: File-grouped updates for better performance
+- Vault-wide property changes
+- Preview before applying
+- File-grouped updates
 
 ### v1.0.3 — Conditional Styling
 
-- **New**: Automatic CSS classes based on property values (`bp-{key}-{value}`)
-- **New**: Styling target option (property only or entire line)
-- **New**: Preset styles for common patterns (done, blocked, high priority, etc.)
-- **New**: Custom style rules editor in settings
-- **New**: Visual feedback in editor, reading view, and property panel
+- Auto CSS classes (`bp-{key}-{value}`)
+- Preset styles for common patterns
+- Custom style rules
 
 ### v1.0.2 — Linked Properties
 
-- **New**: Note links in property values (`[[Note]]`)
-- **New**: Block references in property values (`^block-id`)
-- **New**: Clickable links in property panel
-- **New**: Cmd/Ctrl+Click navigation in editor
-- **New**: Backlink tracking with "Referenced by" section
-- **New**: Autocomplete for notes and block IDs
-- **New**: Settings for linked properties feature
+- Note links in values (`[[Note]]`)
+- Block references (`^block-id`)
+- Backlink tracking
+- Click navigation
 
 ### v1.0.1 — Templates & Panel Editing
 
-- **New**: Property templates with auto-expand
-- **New**: Inline editing in property panel
-- **New**: Add/delete properties from panel
+- Property templates
+- Inline editing in panel
 
 ### v1.0.0 — Initial Release
 
 - Block property syntax
-- Display modes (inline/badge)
+- Display modes
 - Property panel
 - Query command
 - Autocomplete
@@ -690,16 +509,12 @@ Contributions welcome! Please open an issue first to discuss major changes.
 
 [MIT](LICENSE)
 
-## Credits
-
-Developed with the help of Claude Code.
-
 ---
 
 <div align="center">
 
-If you find this plugin useful, consider starring the repository!
-
 **[GitHub](https://github.com/Querulantenkind/obsidian-block-properties-plugin)** · **[Codeberg](https://codeberg.org/Krampus/obsidian-block-properties-plugin)**
+
+If you find this plugin useful, consider starring the repository!
 
 </div>
