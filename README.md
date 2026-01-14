@@ -85,6 +85,9 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 
 **New in v1.0.2**: Property values can now contain links to notes and blocks, enabling relationship tracking between blocks.
 
+![Linked Properties](assets/Linked_Properties.png)
+*Note links and block references with clickable navigation*
+
 ### Syntax
 
 ```markdown
