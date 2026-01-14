@@ -2,6 +2,9 @@
 
 Add metadata to individual blocks in [Obsidian](https://obsidian.md) using an extended block-ID syntax.
 
+![Block Properties in action](assets/Showcase_Block_Properties.png)
+*Inline properties displayed directly in the editor with the Property Panel sidebar*
+
 ## The Problem
 
 Obsidian's properties exist only at the note level. But knowledge isn't atomic — notes contain structure, and that structure carries meaning:
@@ -33,6 +36,11 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 - **Query Command**: Find all blocks with specific properties across your vault
 - **Property Panel**: Sidebar showing all block properties in the current note
 - **Autocomplete**: Suggestions for keys and values based on your existing properties
+
+### Property Panel
+
+![Property Panel](assets/Property_Panel.png)
+*The Property Panel shows all blocks with properties in the current note, with clickable links for quick navigation*
 
 ## Syntax
 
