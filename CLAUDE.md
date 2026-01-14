@@ -19,6 +19,7 @@ Blocks can be annotated with metadata using the syntax: `^block-id [key: value, 
 - **Build:** esbuild via `esbuild.config.mjs`
 - **Editor Integration:** CodeMirror 6 (ViewPlugin, Decoration)
 - **Framework:** Obsidian Plugin API
+- **Graph Visualization:** vis-network, vis-data (v1.0.5+)
 
 ## Project Structure
 
@@ -214,6 +215,11 @@ interface BacklinkEntry { sourceFile: string; sourceBlockId: string; key: string
 // Conditional styling (v1.0.3)
 type StylingTarget = 'property' | 'line'
 interface StyleRule { key: string; value: string; className: string }
+
+// Graph View (v1.0.5)
+interface GraphNode { id: string; label: string; file: string; title?: string; color?: string }
+interface GraphEdge { id: string; from: string; to: string; label: string }
+interface BlockInfo { blockId: string; file: TFile; properties: {key: string; value: string}[]; line: number }
 ```
 
 ## Gotchas
@@ -228,3 +234,7 @@ interface StyleRule { key: string; value: string; className: string }
 - Preset styles require `.bp-use-presets` class on body (toggled via `updateStyles()`)
 - Line decorations must be sorted by position for CodeMirror (use array + sort)
 - Custom style rules use `*` as wildcard value to match any property value
+- Graph View uses vis-network standalone build (includes vis-data)
+- Graph node colors determined by `status` property value
+- vis-network options require `margin` as object `{top, right, bottom, left}`, not number
+- vis-network `smooth.enabled` must be explicitly set for edge curves
