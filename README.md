@@ -275,6 +275,9 @@ Preview: 15 blocks will be updated
 
 **New in v1.0.5**: Visualize block-level relationships in a dedicated graph view.
 
+![Block Graph View](assets/Block_Graph_View.png)
+*Interactive graph showing block relationships with status-based coloring*
+
 ```
     [^task-1]───blocked-by───[^task-2]
         │                       │
