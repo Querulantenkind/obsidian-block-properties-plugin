@@ -1,4 +1,4 @@
-import {ItemView, TFile, WorkspaceLeaf} from 'obsidian';
+import {ItemView, MarkdownView, TFile, WorkspaceLeaf} from 'obsidian';
 import {parseBlockProperties} from './parser';
 import type BlockPropertiesPlugin from './main';
 
@@ -46,17 +46,17 @@ export class PropertyPanelView extends ItemView {
 	}
 
 	private async renderPanel() {
-		const container = this.containerEl.children[1];
-		container.empty();
-		container.addClass('block-properties-panel');
+		const {contentEl} = this;
+		contentEl.empty();
+		contentEl.addClass('block-properties-panel');
 
-		const header = container.createEl('div', {
+		const header = contentEl.createEl('div', {
 			cls: 'block-properties-panel-header',
 		});
 
 		if (!this.currentFile) {
 			header.createEl('h4', {text: 'Block Properties'});
-			container.createEl('p', {
+			contentEl.createEl('p', {
 				text: 'No file open',
 				cls: 'block-properties-panel-empty',
 			});
@@ -69,19 +69,19 @@ export class PropertyPanelView extends ItemView {
 		const blocks = this.extractBlocks(content);
 
 		if (blocks.length === 0) {
-			container.createEl('p', {
+			contentEl.createEl('p', {
 				text: 'No block properties found',
 				cls: 'block-properties-panel-empty',
 			});
 			return;
 		}
 
-		const countEl = container.createEl('p', {
+		const countEl = contentEl.createEl('p', {
 			cls: 'block-properties-panel-count',
 		});
 		countEl.textContent = `${blocks.length} block(s) with properties`;
 
-		const list = container.createEl('div', {
+		const list = contentEl.createEl('div', {
 			cls: 'block-properties-panel-list',
 		});
 
@@ -132,7 +132,7 @@ export class PropertyPanelView extends ItemView {
 		}
 
 		// Summary section
-		const summary = container.createEl('div', {
+		const summary = contentEl.createEl('div', {
 			cls: 'block-properties-panel-summary',
 		});
 
@@ -166,6 +166,8 @@ export class PropertyPanelView extends ItemView {
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
+			if (!line) continue;
+
 			const props = parseBlockProperties(line);
 
 			for (const prop of props) {
@@ -195,9 +197,7 @@ export class PropertyPanelView extends ItemView {
 	}
 
 	private navigateToBlock(line: number) {
-		const view = this.app.workspace.getActiveViewOfType(
-			require('obsidian').MarkdownView
-		);
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
 		if (view) {
 			const editor = view.editor;

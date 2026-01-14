@@ -1,4 +1,4 @@
-import {App, Modal, Setting, TFile} from 'obsidian';
+import {App, MarkdownView, Modal, Setting, TFile} from 'obsidian';
 import {parseBlockProperties} from './parser';
 
 export interface QueryResult {
@@ -128,9 +128,7 @@ export class ResultsModal extends Modal {
 				await leaf.openFile(result.file);
 
 				// Navigate to the block
-				const view = this.app.workspace.getActiveViewOfType(
-					require('obsidian').MarkdownView
-				);
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
 					const editor = view.editor;
 					editor.setCursor({line: result.line, ch: 0});
@@ -183,9 +181,10 @@ export async function searchBlockProperties(
 		const content = await app.vault.cachedRead(file);
 		const lines = content.split('\n');
 
-		let lineOffset = 0;
 		for (let lineNum = 0; lineNum < lines.length; lineNum++) {
 			const line = lines[lineNum];
+			if (!line) continue;
+
 			const blockProps = parseBlockProperties(line);
 
 			for (const prop of blockProps) {
@@ -204,8 +203,6 @@ export async function searchBlockProperties(
 					});
 				}
 			}
-
-			lineOffset += line.length + 1;
 		}
 	}
 

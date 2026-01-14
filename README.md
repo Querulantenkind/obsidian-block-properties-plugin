@@ -65,8 +65,8 @@ The properties appear after the block ID in square brackets, with key-value pair
 ### From Source
 
 ```bash
-git clone https://codeberg.org/YOUR_USERNAME/obsidian-block-properties.git
-cd obsidian-block-properties
+git clone https://codeberg.org/Krampus/obsidian-block-properties-plugin.git
+cd obsidian-block-properties-plugin
 npm install
 npm run build
 ```

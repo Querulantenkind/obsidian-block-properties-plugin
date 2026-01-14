@@ -116,17 +116,18 @@ export default class BlockPropertiesPlugin extends Plugin {
 
 	private async activatePanel() {
 		const existing = this.app.workspace.getLeavesOfType(PANEL_VIEW_TYPE);
+		const firstLeaf = existing[0];
 
-		if (existing.length) {
-			this.app.workspace.revealLeaf(existing[0]);
+		if (firstLeaf) {
+			this.app.workspace.revealLeaf(firstLeaf);
 			return;
 		}
 
 		const leaf = this.app.workspace.getRightLeaf(false);
-		if (leaf) {
-			await leaf.setViewState({type: PANEL_VIEW_TYPE, active: true});
-			this.app.workspace.revealLeaf(leaf);
-		}
+		if (!leaf) return;
+
+		await leaf.setViewState({type: PANEL_VIEW_TYPE, active: true});
+		this.app.workspace.revealLeaf(leaf);
 	}
 
 	private updatePanel() {
