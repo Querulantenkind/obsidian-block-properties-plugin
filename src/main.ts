@@ -7,11 +7,13 @@ import {QueryModal, ResultsModal, searchBlockProperties} from './query';
 import {BlockPropertiesSettingTab} from './settings';
 import {BlockPropertiesSuggest} from './suggest';
 import {BlockPropertiesSettings, DEFAULT_SETTINGS} from './types';
+import {TemplatePickerModal} from './template-modal';
 
 export default class BlockPropertiesPlugin extends Plugin {
 	settings: BlockPropertiesSettings;
 	private styleEl: HTMLStyleElement | null = null;
 	private editorExtension: Extension[] = [];
+	private suggest: BlockPropertiesSuggest | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -24,7 +26,8 @@ export default class BlockPropertiesPlugin extends Plugin {
 		this.registerView(PANEL_VIEW_TYPE, (leaf) => new PropertyPanelView(leaf, this));
 
 		// Register autocomplete suggester
-		this.registerEditorSuggest(new BlockPropertiesSuggest(this));
+		this.suggest = new BlockPropertiesSuggest(this);
+		this.registerEditorSuggest(this.suggest);
 
 		// Add settings tab
 		this.addSettingTab(new BlockPropertiesSettingTab(this.app, this));
@@ -63,6 +66,34 @@ export default class BlockPropertiesPlugin extends Plugin {
 						ch: line.length,
 					});
 				}
+			},
+		});
+
+		// Add command to insert property template
+		this.addCommand({
+			id: 'insert-template',
+			name: 'Insert property template',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				new TemplatePickerModal(
+					this.app,
+					this.settings.templates,
+					(template) => {
+						const cursor = editor.getCursor();
+						const line = editor.getLine(cursor.line);
+
+						const blockId = this.generateBlockId();
+						const propsStr = template.properties
+							.map((p) => `${p.key}: ${p.value}`)
+							.join(', ');
+
+						const insertion = ` ^${blockId} [${propsStr}]`;
+
+						editor.replaceRange(insertion, {
+							line: cursor.line,
+							ch: line.length,
+						});
+					}
+				).open();
 			},
 		});
 
@@ -301,5 +332,18 @@ export default class BlockPropertiesPlugin extends Plugin {
 
 		// Force refresh all markdown views
 		this.app.workspace.updateOptions();
+	}
+
+	getSuggest(): BlockPropertiesSuggest | null {
+		return this.suggest;
+	}
+
+	private generateBlockId(): string {
+		const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+		let id = '';
+		for (let i = 0; i < 6; i++) {
+			id += chars.charAt(Math.floor(Math.random() * chars.length));
+		}
+		return id;
 	}
 }

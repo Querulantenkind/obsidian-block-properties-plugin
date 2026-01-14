@@ -1,6 +1,7 @@
 import {App, PluginSettingTab, Setting} from 'obsidian';
 import type BlockPropertiesPlugin from './main';
-import type {DisplayMode} from './types';
+import type {DisplayMode, PropertyTemplate} from './types';
+import {TemplateEditModal} from './template-modal';
 
 export class BlockPropertiesSettingTab extends PluginSettingTab {
 	plugin: BlockPropertiesPlugin;
@@ -59,5 +60,93 @@ export class BlockPropertiesSettingTab extends PluginSettingTab {
 						this.plugin.updateStyles();
 					})
 			);
+
+		// Templates section
+		containerEl.createEl('h3', {text: 'Property Templates'});
+
+		new Setting(containerEl)
+			.setName('Auto-expand presets')
+			.setDesc('Automatically expand "preset: name" to full template properties when selected from autocomplete')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.autoExpandPresets)
+					.onChange(async (value) => {
+						this.plugin.settings.autoExpandPresets = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		const templatesContainer = containerEl.createEl('div', {
+			cls: 'block-properties-templates-container',
+		});
+
+		this.renderTemplatesList(templatesContainer);
+	}
+
+	private renderTemplatesList(container: HTMLElement): void {
+		container.empty();
+
+		for (let i = 0; i < this.plugin.settings.templates.length; i++) {
+			const template = this.plugin.settings.templates[i];
+			if (template) {
+				this.renderTemplateItem(container, template, i);
+			}
+		}
+
+		new Setting(container).addButton((btn) =>
+			btn
+				.setButtonText('Add template')
+				.setCta()
+				.onClick(() => {
+					this.openTemplateModal(null, (newTemplate) => {
+						this.plugin.settings.templates.push(newTemplate);
+						this.plugin.saveSettings();
+						this.renderTemplatesList(container);
+					});
+				})
+		);
+	}
+
+	private renderTemplateItem(
+		container: HTMLElement,
+		template: PropertyTemplate,
+		index: number
+	): void {
+		new Setting(container)
+			.setName(template.name)
+			.setDesc(
+				template.properties
+					.map((p) => `${p.key}: ${p.value || '(empty)'}`)
+					.join(', ')
+			)
+			.addButton((btn) =>
+				btn
+					.setIcon('pencil')
+					.setTooltip('Edit')
+					.onClick(() => {
+						this.openTemplateModal(template, (updated) => {
+							this.plugin.settings.templates[index] = updated;
+							this.plugin.saveSettings();
+							this.renderTemplatesList(container);
+						});
+					})
+			)
+			.addButton((btn) =>
+				btn
+					.setIcon('trash')
+					.setTooltip('Delete')
+					.onClick(async () => {
+						this.plugin.settings.templates.splice(index, 1);
+						await this.plugin.saveSettings();
+						this.renderTemplatesList(container);
+					})
+			);
+	}
+
+	private openTemplateModal(
+		existing: PropertyTemplate | null,
+		onSave: (template: PropertyTemplate) => void
+	): void {
+		new TemplateEditModal(this.app, existing, onSave).open();
 	}
 }

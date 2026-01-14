@@ -319,3 +319,271 @@
 	font-size: 0.8em;
 	color: var(--text-muted);
 }
+
+/* Template suggestion type */
+.block-properties-suggestion-type-template {
+	background: var(--text-accent);
+	color: var(--background-primary);
+}
+
+.block-properties-suggestion-preview {
+	font-size: 0.75em;
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+	margin-top: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Template Settings Styles */
+.block-properties-templates-container {
+	margin-top: 12px;
+}
+
+.block-properties-template-modal {
+	min-width: 400px;
+}
+
+.block-properties-template-props {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.block-properties-template-prop-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.block-properties-template-input {
+	flex: 1;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+}
+
+.block-properties-template-delete-btn {
+	padding: 4px 8px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 1.2em;
+	line-height: 1;
+}
+
+.block-properties-template-delete-btn:hover {
+	background: var(--background-modifier-error);
+	color: var(--text-on-accent);
+}
+
+.block-properties-template-add-btn {
+	padding: 6px 12px;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 4px;
+	cursor: pointer;
+	background: transparent;
+	color: var(--text-muted);
+	width: 100%;
+}
+
+.block-properties-template-add-btn:hover {
+	border-color: var(--interactive-accent);
+	color: var(--interactive-accent);
+}
+
+/* Template Picker Modal */
+.block-properties-template-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.block-properties-template-item {
+	padding: 12px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.block-properties-template-item:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.block-properties-template-name {
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.block-properties-template-preview {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+}
+
+.block-properties-no-templates {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+/* Panel Editing Styles */
+.block-properties-panel-prop {
+	position: relative;
+	align-items: center;
+}
+
+.block-properties-panel-value-container {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	position: relative;
+	flex: 1;
+	justify-content: flex-end;
+}
+
+.block-properties-panel-value {
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 3px;
+	transition: background 0.15s ease;
+}
+
+.block-properties-panel-value:hover {
+	background: var(--background-modifier-hover);
+}
+
+.block-properties-panel-value.is-empty {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.block-properties-panel-edit-input {
+	flex: 1;
+	min-width: 60px;
+	max-width: 120px;
+	padding: 2px 6px;
+	border: 1px solid var(--interactive-accent);
+	border-radius: 3px;
+	background: var(--background-primary);
+	font-size: 0.85em;
+	color: var(--text-normal);
+}
+
+.block-properties-panel-delete-btn {
+	opacity: 0;
+	padding: 2px 6px;
+	border: none;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 1.1em;
+	transition: opacity 0.15s ease, color 0.15s ease;
+	line-height: 1;
+}
+
+.block-properties-panel-prop:hover .block-properties-panel-delete-btn {
+	opacity: 1;
+}
+
+.block-properties-panel-delete-btn:hover {
+	color: var(--text-error);
+}
+
+.block-properties-panel-add-btn {
+	width: 100%;
+	margin-top: 8px;
+	padding: 6px;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 4px;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.85em;
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.block-properties-panel-add-btn:hover {
+	border-color: var(--interactive-accent);
+	color: var(--interactive-accent);
+}
+
+.block-properties-panel-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	z-index: 10;
+	max-height: 150px;
+	overflow-y: auto;
+	margin-top: 2px;
+}
+
+.block-properties-panel-dropdown-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 6px 8px;
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.block-properties-panel-dropdown-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.block-properties-panel-dropdown-count {
+	font-size: 0.8em;
+	color: var(--text-muted);
+}
+
+.block-properties-panel-new-prop {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 8px;
+	background: var(--background-primary);
+	border: 1px solid var(--interactive-accent);
+	border-radius: 4px;
+	position: relative;
+}
+
+.block-properties-panel-key-input {
+	max-width: 80px;
+}
+
+.block-properties-panel-key-dropdown {
+	left: 0;
+	right: auto;
+	min-width: 120px;
+}
+
+.block-properties-panel-save-btn,
+.block-properties-panel-cancel-btn {
+	padding: 4px 8px;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 0.9em;
+}
+
+.block-properties-panel-save-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.block-properties-panel-cancel-btn {
+	background: var(--background-modifier-border);
+	color: var(--text-muted);
+}

@@ -1,4 +1,4 @@
-import {ItemView, MarkdownView, TFile, WorkspaceLeaf} from 'obsidian';
+import {ItemView, MarkdownView, Notice, TFile, WorkspaceLeaf} from 'obsidian';
 import {parseBlockProperties} from './parser';
 import type BlockPropertiesPlugin from './main';
 
@@ -9,6 +9,9 @@ interface PanelBlock {
 	properties: {key: string; value: string}[];
 	line: number;
 	context: string;
+	blockStart: number;
+	propsStart: number;
+	propsEnd: number;
 }
 
 export class PropertyPanelView extends ItemView {
@@ -124,11 +127,36 @@ export class PropertyPanelView extends ItemView {
 					cls: 'block-properties-panel-key',
 				});
 
-				propEl.createEl('span', {
-					text: p.value,
-					cls: 'block-properties-panel-value',
+				const valueContainer = propEl.createEl('div', {
+					cls: 'block-properties-panel-value-container',
+				});
+
+				const valueSpan = valueContainer.createEl('span', {
+					text: p.value || '(empty)',
+					cls: `block-properties-panel-value ${!p.value ? 'is-empty' : ''}`,
+				});
+
+				valueSpan.addEventListener('click', () => {
+					this.startEditingValue(valueContainer, block, p.key, p.value);
+				});
+
+				const deleteBtn = propEl.createEl('button', {
+					cls: 'block-properties-panel-delete-btn',
+					attr: {'aria-label': 'Delete property'},
+				});
+				deleteBtn.innerHTML = '&times;';
+				deleteBtn.addEventListener('click', () => {
+					this.deleteProperty(block, p.key);
 				});
 			}
+
+			const addPropBtn = props.createEl('button', {
+				text: '+ Add property',
+				cls: 'block-properties-panel-add-btn',
+			});
+			addPropBtn.addEventListener('click', () => {
+				this.startAddingProperty(props, block, addPropBtn);
+			});
 		}
 
 		// Summary section
@@ -172,11 +200,19 @@ export class PropertyPanelView extends ItemView {
 
 			for (const prop of props) {
 				const context = line.slice(0, prop.from).trim().slice(0, 40);
+
+				// Find bracket positions within the line
+				const matchText = line.slice(prop.from, prop.to);
+				const bracketStart = matchText.indexOf('[');
+
 				blocks.push({
 					blockId: prop.blockId,
 					properties: prop.properties,
 					line: i,
 					context: context || '(start of line)',
+					blockStart: prop.from,
+					propsStart: prop.from + bracketStart,
+					propsEnd: prop.to - 1,
 				});
 			}
 		}
@@ -207,6 +243,331 @@ export class PropertyPanelView extends ItemView {
 				true
 			);
 			editor.focus();
+		}
+	}
+
+	private startEditingValue(
+		container: HTMLElement,
+		block: PanelBlock,
+		key: string,
+		currentValue: string
+	): void {
+		container.empty();
+
+		const input = container.createEl('input', {
+			type: 'text',
+			value: currentValue,
+			cls: 'block-properties-panel-edit-input',
+		});
+
+		const dropdown = container.createEl('div', {
+			cls: 'block-properties-panel-dropdown',
+		});
+
+		this.populateValueDropdown(dropdown, key, input);
+
+		input.focus();
+		input.select();
+
+		input.addEventListener('input', () => {
+			this.populateValueDropdown(dropdown, key, input);
+		});
+
+		const save = async () => {
+			const newValue = input.value.trim();
+			await this.updateProperty(block, key, newValue);
+		};
+
+		input.addEventListener('blur', () => {
+			setTimeout(() => {
+				if (!container.contains(document.activeElement)) {
+					save();
+				}
+			}, 150);
+		});
+
+		input.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				save();
+			} else if (e.key === 'Escape') {
+				this.renderPanel();
+			}
+		});
+	}
+
+	private populateValueDropdown(
+		dropdown: HTMLElement,
+		key: string,
+		input: HTMLInputElement
+	): void {
+		dropdown.empty();
+
+		const suggest = this.plugin.getSuggest();
+		if (!suggest) {
+			dropdown.hide();
+			return;
+		}
+
+		const values = suggest.getValuesForKey(key);
+		const query = input.value.toLowerCase();
+
+		const filtered = Array.from(values.entries())
+			.filter(([value]) => value.toLowerCase().includes(query))
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, 5);
+
+		if (filtered.length === 0) {
+			dropdown.hide();
+			return;
+		}
+
+		dropdown.show();
+
+		for (const [value, count] of filtered) {
+			const item = dropdown.createEl('div', {
+				cls: 'block-properties-panel-dropdown-item',
+			});
+
+			item.createEl('span', {text: value});
+			item.createEl('span', {
+				text: `${count}`,
+				cls: 'block-properties-panel-dropdown-count',
+			});
+
+			item.addEventListener('click', () => {
+				input.value = value;
+				input.focus();
+				dropdown.hide();
+			});
+		}
+	}
+
+	private startAddingProperty(
+		container: HTMLElement,
+		block: PanelBlock,
+		addBtn: HTMLElement
+	): void {
+		addBtn.remove();
+
+		const newPropEl = container.createEl('div', {
+			cls: 'block-properties-panel-prop block-properties-panel-new-prop',
+		});
+
+		const keyInput = newPropEl.createEl('input', {
+			type: 'text',
+			placeholder: 'key',
+			cls: 'block-properties-panel-edit-input block-properties-panel-key-input',
+		});
+
+		newPropEl.createEl('span', {text: ':'});
+
+		const valueInput = newPropEl.createEl('input', {
+			type: 'text',
+			placeholder: 'value',
+			cls: 'block-properties-panel-edit-input',
+		});
+
+		const saveBtn = newPropEl.createEl('button', {
+			text: '\u2713',
+			cls: 'block-properties-panel-save-btn',
+		});
+
+		const cancelBtn = newPropEl.createEl('button', {
+			text: '\u00d7',
+			cls: 'block-properties-panel-cancel-btn',
+		});
+
+		keyInput.focus();
+
+		const keyDropdown = newPropEl.createEl('div', {
+			cls: 'block-properties-panel-dropdown block-properties-panel-key-dropdown',
+		});
+
+		keyInput.addEventListener('input', () => {
+			this.populateKeyDropdown(keyDropdown, keyInput, valueInput);
+		});
+
+		saveBtn.addEventListener('click', async () => {
+			const key = keyInput.value.trim();
+			const value = valueInput.value.trim();
+
+			if (!key) return;
+
+			await this.addProperty(block, key, value);
+		});
+
+		cancelBtn.addEventListener('click', () => {
+			this.renderPanel();
+		});
+
+		valueInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') {
+				saveBtn.click();
+			} else if (e.key === 'Escape') {
+				cancelBtn.click();
+			}
+		});
+
+		keyInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				cancelBtn.click();
+			}
+		});
+	}
+
+	private populateKeyDropdown(
+		dropdown: HTMLElement,
+		keyInput: HTMLInputElement,
+		valueInput: HTMLInputElement
+	): void {
+		dropdown.empty();
+
+		const suggest = this.plugin.getSuggest();
+		if (!suggest) {
+			dropdown.hide();
+			return;
+		}
+
+		const keys = suggest.getKeys();
+		const query = keyInput.value.toLowerCase();
+
+		const filtered = Array.from(keys.entries())
+			.filter(([key]) => key.toLowerCase().includes(query))
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, 5);
+
+		if (filtered.length === 0) {
+			dropdown.hide();
+			return;
+		}
+
+		dropdown.show();
+
+		for (const [key, count] of filtered) {
+			const item = dropdown.createEl('div', {
+				cls: 'block-properties-panel-dropdown-item',
+			});
+
+			item.createEl('span', {text: key});
+			item.createEl('span', {
+				text: `${count}`,
+				cls: 'block-properties-panel-dropdown-count',
+			});
+
+			item.addEventListener('click', () => {
+				keyInput.value = key;
+				valueInput.focus();
+				dropdown.hide();
+			});
+		}
+	}
+
+	private async updateProperty(
+		block: PanelBlock,
+		key: string,
+		newValue: string
+	): Promise<void> {
+		if (!this.currentFile) return;
+
+		try {
+			const content = await this.app.vault.read(this.currentFile);
+			const lines = content.split('\n');
+			const line = lines[block.line];
+			if (!line) return;
+
+			const updatedProps = block.properties.map((p) =>
+				p.key === key ? {key, value: newValue} : p
+			);
+
+			const newPropsStr = updatedProps
+				.map((p) => `${p.key}: ${p.value}`)
+				.join(', ');
+
+			const beforeProps = line.slice(0, block.propsStart);
+			const afterProps = line.slice(block.propsEnd + 1);
+			const newLine = `${beforeProps}[${newPropsStr}]${afterProps}`;
+
+			lines[block.line] = newLine;
+			await this.app.vault.modify(this.currentFile, lines.join('\n'));
+
+			this.renderPanel();
+		} catch (e) {
+			new Notice('Failed to update property');
+		}
+	}
+
+	private async addProperty(
+		block: PanelBlock,
+		key: string,
+		value: string
+	): Promise<void> {
+		if (!this.currentFile) return;
+
+		if (block.properties.find((p) => p.key === key)) {
+			await this.updateProperty(block, key, value);
+			return;
+		}
+
+		try {
+			const content = await this.app.vault.read(this.currentFile);
+			const lines = content.split('\n');
+			const line = lines[block.line];
+			if (!line) return;
+
+			const updatedProps = [...block.properties, {key, value}];
+
+			const newPropsStr = updatedProps
+				.map((p) => `${p.key}: ${p.value}`)
+				.join(', ');
+
+			const beforeProps = line.slice(0, block.propsStart);
+			const afterProps = line.slice(block.propsEnd + 1);
+			const newLine = `${beforeProps}[${newPropsStr}]${afterProps}`;
+
+			lines[block.line] = newLine;
+			await this.app.vault.modify(this.currentFile, lines.join('\n'));
+
+			this.renderPanel();
+		} catch (e) {
+			new Notice('Failed to add property');
+		}
+	}
+
+	private async deleteProperty(block: PanelBlock, key: string): Promise<void> {
+		if (!this.currentFile) return;
+
+		try {
+			const content = await this.app.vault.read(this.currentFile);
+			const lines = content.split('\n');
+			const line = lines[block.line];
+			if (!line) return;
+
+			const updatedProps = block.properties.filter((p) => p.key !== key);
+
+			if (updatedProps.length === 0) {
+				// Remove entire block properties syntax, keep ^blockId
+				const beforeBlock = line.slice(0, block.blockStart);
+				const afterProps = line.slice(block.propsEnd + 1);
+				const blockIdMatch = line.slice(block.blockStart).match(/^\^[\w-]+/);
+				const newLine = `${beforeBlock}${blockIdMatch?.[0] || ''}${afterProps}`;
+				lines[block.line] = newLine;
+			} else {
+				const newPropsStr = updatedProps
+					.map((p) => `${p.key}: ${p.value}`)
+					.join(', ');
+
+				const beforeProps = line.slice(0, block.propsStart);
+				const afterProps = line.slice(block.propsEnd + 1);
+				const newLine = `${beforeProps}[${newPropsStr}]${afterProps}`;
+				lines[block.line] = newLine;
+			}
+
+			await this.app.vault.modify(this.currentFile, lines.join('\n'));
+
+			this.renderPanel();
+		} catch (e) {
+			new Notice('Failed to delete property');
 		}
 	}
 }

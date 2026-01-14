@@ -8,11 +8,13 @@ import {
 } from 'obsidian';
 import type BlockPropertiesPlugin from './main';
 import {parseBlockProperties} from './parser';
+import type {PropertyTemplate} from './types';
 
 interface Suggestion {
-	type: 'key' | 'value';
+	type: 'key' | 'value' | 'template';
 	text: string;
 	count: number;
+	template?: PropertyTemplate;
 }
 
 export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
@@ -94,6 +96,18 @@ export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
 			const keyStart = lastComma === -1 ? 0 : lastComma + 1;
 			const currentKey = textInBracket.slice(keyStart, lastColon).trim();
 
+			// If the key is "preset", suggest template names
+			if (currentKey === 'preset') {
+				return this.plugin.settings.templates
+					.filter((t) => t.name.toLowerCase().includes(query))
+					.map((t) => ({
+						type: 'template' as const,
+						text: t.name,
+						count: t.properties.length,
+						template: t,
+					}));
+			}
+
 			const values = this.cachedValues.get(currentKey) || new Map();
 			return Array.from(values.entries())
 				.filter(([value]) => value.toLowerCase().includes(query))
@@ -102,18 +116,33 @@ export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
 				.slice(0, 10);
 		} else {
 			// Suggest keys
-			return Array.from(this.cachedKeys.entries())
+			const suggestions = Array.from(this.cachedKeys.entries())
 				.filter(([key]) => key.toLowerCase().includes(query))
 				.map(([text, count]) => ({type: 'key' as const, text, count}))
 				.sort((a, b) => b.count - a.count)
 				.slice(0, 10);
+
+			// Add "preset" as a special key if it matches and templates exist
+			if (
+				'preset'.includes(query) &&
+				this.plugin.settings.templates.length > 0 &&
+				!suggestions.find((s) => s.text === 'preset')
+			) {
+				suggestions.unshift({
+					type: 'key' as const,
+					text: 'preset',
+					count: this.plugin.settings.templates.length,
+				});
+			}
+
+			return suggestions;
 		}
 	}
 
 	renderSuggestion(suggestion: Suggestion, el: HTMLElement): void {
 		el.addClass('block-properties-suggestion');
 
-		const text = el.createEl('span', {
+		el.createEl('span', {
 			text: suggestion.text,
 			cls: 'block-properties-suggestion-text',
 		});
@@ -122,21 +151,69 @@ export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
 			cls: 'block-properties-suggestion-meta',
 		});
 
+		let typeLabel: string;
+		if (suggestion.type === 'template') {
+			typeLabel = 'template';
+		} else if (suggestion.type === 'key') {
+			typeLabel = 'key';
+		} else {
+			typeLabel = 'value';
+		}
+
 		meta.createEl('span', {
-			text: suggestion.type === 'key' ? 'key' : 'value',
-			cls: 'block-properties-suggestion-type',
+			text: typeLabel,
+			cls: `block-properties-suggestion-type block-properties-suggestion-type-${suggestion.type}`,
 		});
 
 		meta.createEl('span', {
 			text: `${suggestion.count}`,
 			cls: 'block-properties-suggestion-count',
 		});
+
+		// Show template preview
+		if (suggestion.type === 'template' && suggestion.template) {
+			el.createEl('div', {
+				text: suggestion.template.properties
+					.map((p) => `${p.key}: ${p.value || '...'}`)
+					.join(', '),
+				cls: 'block-properties-suggestion-preview',
+			});
+		}
 	}
 
 	selectSuggestion(suggestion: Suggestion, evt: MouseEvent | KeyboardEvent): void {
 		if (!this.context) return;
 
 		const {editor, start, end} = this.context;
+		const line = editor.getLine(start.line);
+
+		// Handle template expansion
+		if (
+			suggestion.type === 'template' &&
+			suggestion.template &&
+			this.plugin.settings.autoExpandPresets
+		) {
+			// Find the bracket start to replace the entire property block
+			const bracketStart = line.lastIndexOf('[', start.ch);
+			const bracketEnd = line.indexOf(']', end.ch);
+
+			if (bracketStart !== -1 && bracketEnd !== -1) {
+				const propsStr = suggestion.template.properties
+					.map((p) => `${p.key}: ${p.value}`)
+					.join(', ');
+
+				editor.replaceRange(
+					`[${propsStr}]`,
+					{line: start.line, ch: bracketStart},
+					{line: start.line, ch: bracketEnd + 1}
+				);
+
+				// Move cursor to end
+				const newCh = bracketStart + propsStr.length + 2;
+				editor.setCursor({line: start.line, ch: newCh});
+				return;
+			}
+		}
 
 		let replacement = suggestion.text;
 
@@ -193,5 +270,18 @@ export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
 		}
 
 		this.lastCacheUpdate = now;
+	}
+
+	getKeys(): Map<string, number> {
+		return this.cachedKeys;
+	}
+
+	getValuesForKey(key: string): Map<string, number> {
+		return this.cachedValues.get(key) || new Map();
+	}
+
+	async refreshCache(): Promise<void> {
+		this.lastCacheUpdate = 0;
+		await this.updateCache();
 	}
 }
