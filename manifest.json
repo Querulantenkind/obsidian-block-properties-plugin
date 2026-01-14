@@ -1,7 +1,7 @@
 {
 	"id": "block-properties",
 	"name": "Block Properties",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"minAppVersion": "0.15.0",
 	"description": "Add metadata to individual blocks. Extends block reference syntax to include key-value properties.",
 	"author": "Luca Gabriel Oelfke",

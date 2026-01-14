@@ -9,6 +9,8 @@ Blocks can be annotated with metadata using the syntax: `^block-id [key: value, 
 
 **v1.0.3+**: Blocks receive CSS classes based on properties for conditional styling.
 
+**v1.0.4+**: Bulk editing allows changing properties across the entire vault.
+
 ## Tech Stack
 
 - **Language:** TypeScript (strict mode)
@@ -37,6 +39,9 @@ src/
 
   # Conditional Styling (v1.0.3)
   conditional-styles.ts # Generate CSS classes from properties
+
+  # Bulk Editing (v1.0.4)
+  bulk-edit.ts         # Vault-wide property editing modal
 
 styles.css             # All plugin styles
 assets/                # Screenshots for README
@@ -103,6 +108,17 @@ Some text ^my-block [status: draft, priority: high]
 - Custom rules: `StyleRule { key, value, className }`
 - Line decorations via `Decoration.line()` in CodeMirror
 
+### Bulk Editing (v1.0.4)
+```
+status: draft → status: review (across all files)
+```
+- `bulk-edit.ts` provides `BulkEditModal`
+- Reuses `searchBlockProperties()` from `query.ts`
+- Groups results by file to minimize I/O operations
+- Regex-based property replacement: `key: old` → `key: new`
+- Preview shows affected blocks before applying
+- Invalidates suggest cache after changes
+
 ## Commands
 
 | ID | Name | Description |
@@ -111,6 +127,7 @@ Some text ^my-block [status: draft, priority: high]
 | `insert-template` | Insert property template | Opens template picker |
 | `query-block-properties` | Query block properties | Search vault by key/value |
 | `open-property-panel` | Open property panel | Show sidebar panel |
+| `bulk-edit-properties` | Bulk edit properties | Change values across vault |
 
 ## Settings
 

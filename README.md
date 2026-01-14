@@ -79,12 +79,18 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 - **Backlink Tracking**: See which blocks reference the current block
 - **Link Autocomplete**: Type `[[` for notes or `^` for block suggestions
 
-### Conditional Styling <sup>NEW in v1.0.3</sup>
+### Conditional Styling
 
 - **Automatic CSS Classes**: Every property generates `bp-{key}-{value}` classes
 - **Styling Target**: Apply styles to property text or entire line
 - **Preset Styles**: Built-in visual styles for common patterns
 - **Custom Rules**: Define your own key-value → class mappings
+
+### Bulk Editing <sup>NEW in v1.0.4</sup>
+
+- **Vault-Wide Changes**: Update all properties with a specific key/value at once
+- **Preview Before Apply**: See exactly which blocks will be affected
+- **Value Filtering**: Target specific values or match any value for a key
 
 ---
 
@@ -217,6 +223,44 @@ Then add CSS in your vault's snippets:
 ^section-review [status: in-progress] /* Blue tint */
 ^section-final [status: done]        /* Strikethrough */
 ```
+
+---
+
+## Bulk Editing
+
+**New in v1.0.4**: Change property values across your entire vault in one operation.
+
+### How to Use
+
+1. Open Command Palette → "Bulk edit properties"
+2. Select a property key from the dropdown
+3. Optionally filter by current value (leave empty for "any")
+4. Enter the new value
+5. Click "Preview Changes" to see affected blocks
+6. Click "Apply Changes" to update all matches
+
+### Example
+
+Change all `status: draft` to `status: review`:
+
+```
+Property key:    status
+Current value:   draft
+New value:       review
+
+Preview: 15 blocks will be updated
+├── notes/project.md → ^task-1
+│   status: draft → review
+├── notes/ideas.md → ^section-2
+│   status: draft → review
+└── ...
+```
+
+### Safety Features
+
+- **Preview first**: Always see what will change before applying
+- **File grouping**: Minimizes file operations for better performance
+- **Error handling**: Failed updates are reported, successful ones proceed
 
 ---
 
@@ -357,6 +401,7 @@ With auto-expand enabled, this becomes:
 | `Insert property template` | Choose from saved templates to insert |
 | `Query block properties` | Search for blocks by property key/value |
 | `Open property panel` | Show sidebar with all properties in current note |
+| `Bulk edit properties` | Change property values across the vault |
 
 ---
 
@@ -498,13 +543,20 @@ A: Navigation will fail with a "not found" notice. The property value is preserv
 - [ ] Property inheritance (section → subsection)
 - [ ] Typed properties (date picker, number validation)
 - [ ] Export/import properties
-- [ ] Bulk editing (change all `status: draft` to `status: review`)
+- [x] ~~Bulk editing~~ *(Added in v1.0.4)*
 - [x] ~~Conditional styling~~ *(Added in v1.0.3)*
 - [x] ~~Linked properties~~ *(Added in v1.0.2)*
 
 ---
 
 ## Changelog
+
+### v1.0.4 — Bulk Editing
+
+- **New**: Bulk edit command to change properties across the vault
+- **New**: Preview affected blocks before applying changes
+- **New**: Filter by specific value or match any value for a key
+- **New**: File-grouped updates for better performance
 
 ### v1.0.3 — Conditional Styling
 

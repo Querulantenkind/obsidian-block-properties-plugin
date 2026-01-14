@@ -408,4 +408,8 @@ export class BlockPropertiesSuggest extends EditorSuggest<Suggestion> {
 		this.lastCacheUpdate = 0;
 		await this.updateCache();
 	}
+
+	invalidateCache(): void {
+		this.lastCacheUpdate = 0;
+	}
 }

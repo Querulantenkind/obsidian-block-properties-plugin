@@ -825,3 +825,71 @@
 .bp-use-presets .bp-styled-line.bp-status-draft {
 	background: rgba(var(--color-yellow-rgb, 255, 204, 0), 0.08);
 }
+
+/* ============================================ */
+/* Bulk Edit Modal                              */
+/* ============================================ */
+
+.block-properties-bulk-edit-modal {
+	min-width: 450px;
+}
+
+.block-properties-bulk-loading {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.block-properties-bulk-count {
+	font-weight: 500;
+	margin: 12px 0 8px 0;
+	color: var(--text-normal);
+}
+
+.block-properties-bulk-preview {
+	max-height: 300px;
+	overflow-y: auto;
+	margin: 8px 0 16px 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-secondary);
+}
+
+.block-properties-bulk-preview-container {
+	min-height: 40px;
+}
+
+.block-properties-bulk-preview-item {
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.block-properties-bulk-preview-item:last-child {
+	border-bottom: none;
+}
+
+.block-properties-bulk-preview-file {
+	font-weight: 500;
+	color: var(--text-accent);
+	margin-bottom: 4px;
+}
+
+.block-properties-bulk-preview-change {
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+}
+
+.block-properties-bulk-preview-old {
+	text-decoration: line-through;
+	color: var(--color-red);
+}
+
+.block-properties-bulk-preview-new {
+	color: var(--color-green);
+}
+
+.block-properties-bulk-preview-more {
+	padding: 8px 12px;
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 0.9em;
+}

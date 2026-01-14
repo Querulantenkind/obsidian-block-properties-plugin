@@ -10,6 +10,7 @@ import {BlockPropertiesSettings, DEFAULT_SETTINGS} from './types';
 import {TemplatePickerModal} from './template-modal';
 import {BacklinkIndexer} from './backlink-index';
 import {getConditionalClasses} from './conditional-styles';
+import {BulkEditModal} from './bulk-edit';
 
 export default class BlockPropertiesPlugin extends Plugin {
 	settings: BlockPropertiesSettings;
@@ -140,6 +141,15 @@ export default class BlockPropertiesPlugin extends Plugin {
 			name: 'Open property panel',
 			callback: () => {
 				this.activatePanel();
+			},
+		});
+
+		// Add command to bulk edit properties
+		this.addCommand({
+			id: 'bulk-edit-properties',
+			name: 'Bulk edit properties',
+			callback: () => {
+				new BulkEditModal(this.app, this).open();
 			},
 		});
 

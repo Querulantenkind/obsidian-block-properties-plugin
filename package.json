@@ -1,6 +1,6 @@
 {
 	"name": "block-properties",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Add metadata properties to individual blocks in Obsidian",
 	"main": "main.js",
 	"type": "module",
