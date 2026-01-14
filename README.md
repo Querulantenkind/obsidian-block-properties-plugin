@@ -1,9 +1,20 @@
+<div align="center">
+
 # Block Properties
 
-Add metadata to individual blocks in [Obsidian](https://obsidian.md) using an extended block-ID syntax.
+**Add metadata to individual blocks in Obsidian**
+
+[![GitHub release](https://img.shields.io/github/v/release/Querulantenkind/obsidian-block-properties-plugin?style=flat-square)](https://github.com/Querulantenkind/obsidian-block-properties-plugin/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Obsidian](https://img.shields.io/badge/Obsidian-0.15.0+-7C3AED?style=flat-square&logo=obsidian&logoColor=white)](https://obsidian.md)
+
+*Extend block-ID syntax with inline key-value properties*
 
 ![Block Properties in action](assets/Showcase_Block_Properties.png)
-*Inline properties displayed directly in the editor with the Property Panel sidebar*
+
+</div>
+
+---
 
 ## The Problem
 
