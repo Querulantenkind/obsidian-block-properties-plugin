@@ -7,6 +7,8 @@ Blocks can be annotated with metadata using the syntax: `^block-id [key: value, 
 
 **v1.0.2+**: Property values can contain links to notes (`[[Note]]`) and blocks (`^block-id`).
 
+**v1.0.3+**: Blocks receive CSS classes based on properties for conditional styling.
+
 ## Tech Stack
 
 - **Language:** TypeScript (strict mode)
@@ -32,6 +34,9 @@ src/
   link-parser.ts       # Parse [[Note]] and ^block-id in values
   link-resolver.ts     # Resolve and navigate to linked targets
   backlink-index.ts    # Track incoming references between blocks
+
+  # Conditional Styling (v1.0.3)
+  conditional-styles.ts # Generate CSS classes from properties
 
 styles.css             # All plugin styles
 assets/                # Screenshots for README
@@ -86,6 +91,18 @@ Some text ^my-block [status: draft, priority: high]
 - Debounced updates (500ms) for performance
 - Built on workspace ready, updated incrementally
 
+### Conditional Styling (v1.0.3)
+```
+^task [status: done, priority: high]
+→ Classes: bp-status-done, bp-priority-high
+```
+- `conditional-styles.ts` generates `bp-{key}-{value}` classes
+- Sanitizes values for CSS (lowercase, replace special chars with `-`)
+- Styling target: `'property'` (text only) or `'line'` (entire line)
+- Preset styles toggled via `.bp-use-presets` class on body
+- Custom rules: `StyleRule { key, value, className }`
+- Line decorations via `Decoration.line()` in CodeMirror
+
 ## Commands
 
 | ID | Name | Description |
@@ -106,6 +123,10 @@ Some text ^my-block [status: draft, priority: high]
 | `autoExpandPresets` | boolean | `true` |
 | `enableLinkedProperties` | boolean | `true` |
 | `showBacklinksInPanel` | boolean | `true` |
+| `enableConditionalStyling` | boolean | `true` |
+| `stylingTarget` | `'property' \| 'line'` | `'property'` |
+| `usePresetStyles` | boolean | `true` |
+| `customStyleRules` | `StyleRule[]` | `[]` |
 
 ## Development
 
@@ -153,6 +174,10 @@ type LinkType = 'note' | 'block'
 interface ParsedLink { type: LinkType; raw: string; target: string; alias?: string }
 interface ParsedValue { raw: string; links: ParsedLink[] }
 interface BacklinkEntry { sourceFile: string; sourceBlockId: string; key: string; line: number }
+
+// Conditional styling (v1.0.3)
+type StylingTarget = 'property' | 'line'
+interface StyleRule { key: string; value: string; className: string }
 ```
 
 ## Gotchas
@@ -164,3 +189,6 @@ interface BacklinkEntry { sourceFile: string; sourceBlockId: string; key: string
 - Link positions stored in WeakMap keyed by EditorView instance
 - BacklinkIndexer uses debouncing to avoid excessive reindexing
 - Block refs inside note links (`[[Note#^block]]`) are ignored by link-parser
+- Preset styles require `.bp-use-presets` class on body (toggled via `updateStyles()`)
+- Line decorations must be sorted by position for CodeMirror (use array + sort)
+- Custom style rules use `*` as wildcard value to match any property value

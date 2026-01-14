@@ -14,23 +14,21 @@ import {App} from 'obsidian';
 import {parseBlockProperties} from './parser';
 import {getLinkPositions} from './link-parser';
 import {navigateToLink} from './link-resolver';
-import type {DisplayMode, ParsedLink} from './types';
-
-const propertyDecoration = Decoration.mark({
-	class: 'block-property',
-});
+import {getConditionalClasses} from './conditional-styles';
+import type {BlockPropertiesSettings, DisplayMode, ParsedLink} from './types';
 
 class BadgeWidget extends WidgetType {
 	constructor(
 		private blockId: string,
-		private properties: {key: string; value: string}[]
+		private properties: {key: string; value: string}[],
+		private conditionalClasses: string[] = []
 	) {
 		super();
 	}
 
 	toDOM() {
 		const badge = document.createElement('span');
-		badge.className = 'block-property-badge';
+		badge.className = ['block-property-badge', ...this.conditionalClasses].join(' ');
 		badge.setAttribute('data-block-id', this.blockId);
 		badge.setAttribute('data-properties', JSON.stringify(this.properties));
 
@@ -45,12 +43,13 @@ class BadgeWidget extends WidgetType {
 	eq(other: BadgeWidget) {
 		return (
 			this.blockId === other.blockId &&
-			JSON.stringify(this.properties) === JSON.stringify(other.properties)
+			JSON.stringify(this.properties) === JSON.stringify(other.properties) &&
+			JSON.stringify(this.conditionalClasses) === JSON.stringify(other.conditionalClasses)
 		);
 	}
 }
 
-function createViewPlugin(displayMode: DisplayMode) {
+function createViewPlugin(displayMode: DisplayMode, settings: BlockPropertiesSettings) {
 	class BlockPropertiesViewPlugin implements PluginValue {
 		decorations: DecorationSet;
 
@@ -68,6 +67,8 @@ function createViewPlugin(displayMode: DisplayMode) {
 
 		private buildDecorations(view: EditorView): DecorationSet {
 			const builder = new RangeSetBuilder<Decoration>();
+			// Collect decorations to sort later (CodeMirror requires sorted ranges)
+			const decorations: {from: number; to: number; decoration: Decoration}[] = [];
 
 			for (const {from, to} of view.visibleRanges) {
 				const text = view.state.doc.sliceString(from, to);
@@ -81,20 +82,47 @@ function createViewPlugin(displayMode: DisplayMode) {
 						const decorFrom = prop.from + bracketStart;
 						const decorTo = prop.to;
 
+						// Get conditional classes
+						const conditionalClasses = getConditionalClasses(prop.properties, settings);
+
+						// Add line decoration if styling target is 'line'
+						if (settings.enableConditionalStyling && settings.stylingTarget === 'line' && conditionalClasses.length > 0) {
+							const line = view.state.doc.lineAt(prop.from);
+							decorations.push({
+								from: line.from,
+								to: line.from,
+								decoration: Decoration.line({
+									class: ['bp-styled-line', ...conditionalClasses].join(' ')
+								})
+							});
+						}
+
 						if (displayMode === 'badge') {
 							// Replace with badge widget
-							const widget = new BadgeWidget(prop.blockId, prop.properties);
-							builder.add(
-								decorFrom,
-								decorTo,
-								Decoration.replace({widget})
-							);
+							const widget = new BadgeWidget(prop.blockId, prop.properties, conditionalClasses);
+							decorations.push({
+								from: decorFrom,
+								to: decorTo,
+								decoration: Decoration.replace({widget})
+							});
 						} else {
-							// Inline mode - just style the text
-							builder.add(decorFrom, decorTo, propertyDecoration);
+							// Inline mode - style the text with conditional classes
+							const classes = ['block-property', ...conditionalClasses];
+							decorations.push({
+								from: decorFrom,
+								to: decorTo,
+								decoration: Decoration.mark({class: classes.join(' ')})
+							});
 						}
 					}
 				}
+			}
+
+			// Sort decorations by position (required by CodeMirror)
+			decorations.sort((a, b) => a.from - b.from || a.to - b.to);
+
+			for (const d of decorations) {
+				builder.add(d.from, d.to, d.decoration);
 			}
 
 			return builder.finish();
@@ -300,9 +328,13 @@ function createLinkClickHandler(app: App) {
 	});
 }
 
-export function createBlockPropertiesExtension(displayMode: DisplayMode, app?: App) {
+export function createBlockPropertiesExtension(
+	displayMode: DisplayMode,
+	settings: BlockPropertiesSettings,
+	app?: App
+) {
 	const extensions: Extension[] = [
-		createViewPlugin(displayMode),
+		createViewPlugin(displayMode, settings),
 		blockPropertiesTooltip,
 	];
 

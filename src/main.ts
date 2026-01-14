@@ -9,6 +9,7 @@ import {BlockPropertiesSuggest} from './suggest';
 import {BlockPropertiesSettings, DEFAULT_SETTINGS} from './types';
 import {TemplatePickerModal} from './template-modal';
 import {BacklinkIndexer} from './backlink-index';
+import {getConditionalClasses} from './conditional-styles';
 
 export default class BlockPropertiesPlugin extends Plugin {
 	settings: BlockPropertiesSettings;
@@ -23,6 +24,7 @@ export default class BlockPropertiesPlugin extends Plugin {
 		// Register the CodeMirror extension
 		this.editorExtension = createBlockPropertiesExtension(
 			this.settings.displayMode,
+			this.settings,
 			this.settings.enableLinkedProperties ? this.app : undefined
 		);
 		this.registerEditorExtension(this.editorExtension);
@@ -216,9 +218,12 @@ export default class BlockPropertiesPlugin extends Plugin {
 				const propsText = text.slice(prop.from + bracketStart, prop.to);
 				const afterProps = text.slice(prop.to);
 
+				// Get conditional classes
+				const conditionalClasses = getConditionalClasses(prop.properties, this.settings);
+
 				// Create wrapper span for properties
 				const wrapper = document.createElement('span');
-				wrapper.className = 'block-property block-property-reading';
+				wrapper.className = ['block-property', 'block-property-reading', ...conditionalClasses].join(' ');
 				wrapper.textContent = propsText;
 				wrapper.setAttribute('data-block-id', prop.blockId);
 				wrapper.setAttribute(
@@ -244,6 +249,14 @@ export default class BlockPropertiesPlugin extends Plugin {
 					parent.insertBefore(wrapper, node);
 					parent.insertBefore(afterNode, node);
 					parent.removeChild(node);
+
+					// Apply line styling if target is 'line'
+					if (this.settings.enableConditionalStyling && this.settings.stylingTarget === 'line' && conditionalClasses.length > 0) {
+						const lineEl = wrapper.closest('p, li, div.markdown-preview-sizer > div');
+						if (lineEl) {
+							lineEl.classList.add('bp-styled-line', ...conditionalClasses);
+						}
+					}
 				}
 			}
 		}
@@ -343,12 +356,19 @@ export default class BlockPropertiesPlugin extends Plugin {
 				font-size: 0.9em;
 			}
 		`;
+
+		// Toggle preset styles class on body
+		document.body.classList.toggle(
+			'bp-use-presets',
+			this.settings.enableConditionalStyling && this.settings.usePresetStyles
+		);
 	}
 
 	refreshEditorExtension() {
 		// Update the extension array contents
 		const newExtension = createBlockPropertiesExtension(
 			this.settings.displayMode,
+			this.settings,
 			this.settings.enableLinkedProperties ? this.app : undefined
 		);
 		this.editorExtension.length = 0;

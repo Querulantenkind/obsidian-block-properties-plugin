@@ -2,6 +2,7 @@ import {ItemView, MarkdownView, Notice, TFile, WorkspaceLeaf} from 'obsidian';
 import {parseBlockProperties} from './parser';
 import {parseLinksInValue, getLinkPositions} from './link-parser';
 import {navigateToLink} from './link-resolver';
+import {getConditionalClasses} from './conditional-styles';
 import {ParsedLink, BacklinkEntry} from './types';
 import type BlockPropertiesPlugin from './main';
 
@@ -92,8 +93,12 @@ export class PropertyPanelView extends ItemView {
 		});
 
 		for (const block of blocks) {
+			// Get conditional classes for this block
+			const conditionalClasses = getConditionalClasses(block.properties, this.plugin.settings);
+			const itemClasses = ['block-properties-panel-item', ...conditionalClasses];
+
 			const item = list.createEl('div', {
-				cls: 'block-properties-panel-item',
+				cls: itemClasses.join(' '),
 			});
 
 			const itemHeader = item.createEl('div', {

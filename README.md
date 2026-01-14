@@ -71,13 +71,20 @@ This needs review. ^draft-section [status: draft, reviewer: pending]
 - **Property Templates**: Reusable presets for common property combinations
 - **Auto-expand**: Type `preset: task` and it expands to the full template
 
-### Linked Properties <sup>NEW in v1.0.2</sup>
+### Linked Properties
 
 - **Note Links**: Reference other notes with `[[Note]]` syntax
 - **Block References**: Link to other blocks with `^block-id` syntax
 - **Click Navigation**: Click links in the panel or Cmd/Ctrl+Click in the editor
 - **Backlink Tracking**: See which blocks reference the current block
 - **Link Autocomplete**: Type `[[` for notes or `^` for block suggestions
+
+### Conditional Styling <sup>NEW in v1.0.3</sup>
+
+- **Automatic CSS Classes**: Every property generates `bp-{key}-{value}` classes
+- **Styling Target**: Apply styles to property text or entire line
+- **Preset Styles**: Built-in visual styles for common patterns
+- **Custom Rules**: Define your own key-value → class mappings
 
 ---
 
@@ -124,6 +131,94 @@ Referenced by:
 ```
 
 This creates a bidirectional relationship view without leaving the current note.
+
+---
+
+## Conditional Styling
+
+**New in v1.0.3**: Blocks automatically receive CSS classes based on their property values, enabling visual differentiation.
+
+![Conditional Styling](assets/Conditional_Styling.png)
+*Blocks with `status: deprecated` are automatically styled with strikethrough*
+
+### How It Works
+
+Every property generates a CSS class in the format `bp-{key}-{value}`:
+
+```markdown
+^task-1 [status: done, priority: high]
+```
+
+This block receives classes: `bp-status-done`, `bp-priority-high`
+
+### Styling Target
+
+Choose where styles are applied:
+
+| Target | Effect |
+|--------|--------|
+| **Property** | Only the `[...]` text is styled |
+| **Line** | The entire line/paragraph is styled |
+
+### Preset Styles
+
+Enable built-in styles for common property patterns:
+
+| Property | Effect |
+|----------|--------|
+| `status: done` / `completed` | Strikethrough, reduced opacity |
+| `status: blocked` | Red left border |
+| `status: in-progress` / `active` | Blue background tint |
+| `priority: high` / `urgent` | Red text/background |
+| `priority: low` | Reduced opacity |
+| `type: warning` | Orange background |
+| `type: deprecated` | Strikethrough, red, faded |
+| `type: experimental` | Italic, purple tint |
+| `status: draft` | Yellow background tint |
+
+### Custom Rules
+
+Define your own styling rules in Settings:
+
+```
+Key: status
+Value: review (or * for any value)
+Class: my-review-style
+```
+
+Then add CSS in your vault's snippets:
+
+```css
+.my-review-style {
+  background: rgba(255, 200, 0, 0.2);
+  border-left: 3px solid orange;
+}
+```
+
+### Use Cases
+
+#### Task Management
+```markdown
+^task-done [status: done]        /* Strikethrough */
+^task-blocked [status: blocked]  /* Red border */
+^task-urgent [priority: high]    /* Red highlight */
+```
+
+#### Documentation Status
+```markdown
+^api-stable [type: stable]           /* Green text */
+^api-deprecated [type: deprecated]   /* Strikethrough, red */
+^api-experimental [type: experimental] /* Italic, purple */
+```
+
+#### Content Workflow
+```markdown
+^section-draft [status: draft]       /* Yellow tint */
+^section-review [status: in-progress] /* Blue tint */
+^section-final [status: done]        /* Strikethrough */
+```
+
+---
 
 ### Autocomplete for Links
 
@@ -267,6 +362,9 @@ With auto-expand enabled, this becomes:
 
 ## Settings
 
+![Settings](assets/Settings.png)
+*All settings including Conditional Styling options*
+
 | Setting | Description |
 |---------|-------------|
 | **Display** | |
@@ -276,6 +374,11 @@ With auto-expand enabled, this becomes:
 | **Linked Properties** | |
 | Enable linked properties | Allow `[[Note]]` and `^block-id` in values |
 | Show backlinks in panel | Display "Referenced by" section |
+| **Conditional Styling** | |
+| Enable conditional styling | Add CSS classes based on property values |
+| Styling target | Apply to `Property only` or `Entire line` |
+| Use preset styles | Enable built-in styles for status/priority/type |
+| Custom style rules | Define key-value → class mappings |
 | **Templates** | |
 | Auto-expand presets | Automatically expand `preset: name` to full template |
 | Property Templates | Create, edit, and delete reusable property sets |
@@ -396,12 +499,20 @@ A: Navigation will fail with a "not found" notice. The property value is preserv
 - [ ] Typed properties (date picker, number validation)
 - [ ] Export/import properties
 - [ ] Bulk editing (change all `status: draft` to `status: review`)
-- [ ] Conditional styling (highlight based on property values)
+- [x] ~~Conditional styling~~ *(Added in v1.0.3)*
 - [x] ~~Linked properties~~ *(Added in v1.0.2)*
 
 ---
 
 ## Changelog
+
+### v1.0.3 — Conditional Styling
+
+- **New**: Automatic CSS classes based on property values (`bp-{key}-{value}`)
+- **New**: Styling target option (property only or entire line)
+- **New**: Preset styles for common patterns (done, blocked, high priority, etc.)
+- **New**: Custom style rules editor in settings
+- **New**: Visual feedback in editor, reading view, and property panel
 
 ### v1.0.2 — Linked Properties
 

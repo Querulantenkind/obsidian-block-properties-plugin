@@ -41,6 +41,15 @@ export interface PropertyTemplate {
 
 export type DisplayMode = 'inline' | 'badge';
 
+// Conditional styling
+export type StylingTarget = 'property' | 'line';
+
+export interface StyleRule {
+	key: string;
+	value: string;      // Exact match or "*" for any value
+	className: string;  // Custom class to apply
+}
+
 export interface BlockPropertiesSettings {
 	displayMode: DisplayMode;
 	propertyColor: string;
@@ -49,6 +58,10 @@ export interface BlockPropertiesSettings {
 	autoExpandPresets: boolean;
 	enableLinkedProperties: boolean;
 	showBacklinksInPanel: boolean;
+	enableConditionalStyling: boolean;
+	stylingTarget: StylingTarget;
+	usePresetStyles: boolean;
+	customStyleRules: StyleRule[];
 }
 
 export const DEFAULT_SETTINGS: BlockPropertiesSettings = {
@@ -68,4 +81,8 @@ export const DEFAULT_SETTINGS: BlockPropertiesSettings = {
 	autoExpandPresets: true,
 	enableLinkedProperties: true,
 	showBacklinksInPanel: true,
+	enableConditionalStyling: true,
+	stylingTarget: 'property',
+	usePresetStyles: true,
+	customStyleRules: [],
 };
